@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "brand-ai-readiness-audit",
+  "version": "1.0.0",
+  "description": "Agent Skill Marketplace that audits any website URL for AI discoverability and on-site engagement problems, and returns an evidence-backed report with severity, suggested fixes and priority.",
+  "author": "Adobe University Hackathon 2026 - Round 3 submission",
+  "license": "MIT",
+  "entrypoint": "audit-orchestrator",
+  "runtime": {
+    "language": "python",
+    "min_version": "3.11",
+    "requirements": "requirements.txt",
+    "optional_dependencies": {
+      "playwright": "Enables the raw-HTML versus rendered-DOM comparison. Without it the audit still runs and the rendering-dependent checks report as not applicable."
+    },
+    "network": "outbound HTTP/HTTPS to the audited site only; no external service is required to resolve this manifest"
+  },
+  "safety": {
+    "read_only": true,
+    "respects_robots_txt": true,
+    "authenticates": false,
+    "submits_forms": false,
+    "bounded_crawl": true,
+    "blocks_private_networks": true
+  },
+  "skills": [
+    {
+      "name": "audit-orchestrator",
+      "path": "skills/audit-orchestrator",
+      "entrypoint": true,
+      "description": "Single entrypoint. Validates the URL, runs the crawl and analysis skills, normalizes and deduplicates findings, computes severity, confidence, priority and the AI readiness score, and emits the schema-validated final report.",
+      "inputs": [
+        "url",
+        "max_pages",
+        "max_depth",
+        "render"
+      ],
+      "outputs": [
+        "audit report (JSON)"
+      ],
+      "scripts": [
+        "scripts/run_audit.py",
+        "scripts/compose_report.py",
+        "scripts/validate_marketplace.py",
+        "scripts/render_report.py"
+      ]
+    },
+    {
+      "name": "crawl-render-audit",
+      "path": "skills/crawl-render-audit",
+      "entrypoint": false,
+      "description": "Safe bounded read-only crawler and evidence engine. Collects HTTP status, redirects, robots.txt, sitemap, DOM structure, metadata, structured data, link graph, raw-versus-rendered comparison, page importance and business facts.",
+      "inputs": [
+        "url",
+        "crawl bounds"
+      ],
+      "outputs": [
+        "evidence model (JSON)"
+      ],
+      "scripts": [
+        "scripts/collect_evidence.py"
+      ]
+    },
+    {
+      "name": "discoverability-audit",
+      "path": "skills/discoverability-audit",
+      "entrypoint": false,
+      "description": "Detects AI discoverability failures across the discover, access, understand, extract and represent stages, from the evidence model.",
+      "inputs": [
+        "evidence model (JSON)"
+      ],
+      "outputs": [
+        "findings (JSON)"
+      ],
+      "scripts": [
+        "scripts/analyze_discoverability.py"
+      ]
+    },
+    {
+      "name": "freshness-corroboration",
+      "path": "skills/freshness-corroboration",
+      "entrypoint": false,
+      "description": "Checks entity naming consistency, contact-fact consistency between structured data and visible pages, and freshness signals, with normalization to avoid false positives.",
+      "inputs": [
+        "evidence model (JSON)"
+      ],
+      "outputs": [
+        "findings (JSON)"
+      ],
+      "scripts": [
+        "scripts/analyze_freshness.py"
+      ]
+    },
+    {
+      "name": "engagement-audit",
+      "path": "skills/engagement-audit",
+      "entrypoint": false,
+      "description": "Detects on-site engagement failures: homepage orientation, page self-identification, navigation availability, missing next steps and interior pages that lose the visitor's context.",
+      "inputs": [
+        "evidence model (JSON)"
+      ],
+      "outputs": [
+        "findings (JSON)"
+      ],
+      "scripts": [
+        "scripts/analyze_engagement.py"
+      ]
+    }
+  ]
+}

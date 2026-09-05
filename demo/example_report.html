@@ -1,0 +1,340 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Readiness Report - 127.0.0.1</title>
+<style>
+:root{--bg:#f7f7f5;--card:#fff;--ink:#1b1b1a;--mut:#6b6b66;--line:#e4e4e0}
+@media(prefers-color-scheme:dark){:root{--bg:#141413;--card:#1e1e1c;--ink:#eeeeec;
+--mut:#9a9a94;--line:#33332f}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.55 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:32px 20px 64px}
+h1{font-size:22px;margin:0 0 4px}.sub{color:var(--mut);font-size:13px;margin-bottom:24px}
+.score{display:flex;gap:24px;align-items:center;background:var(--card);
+border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:20px;flex-wrap:wrap}
+.big{font-size:44px;font-weight:650;line-height:1}
+.dims{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;flex:1;min-width:260px}
+.dim{font-size:13px}.bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:#4b6bfb}
+.counts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.pill{font-size:12px;padding:4px 10px;border-radius:99px;border:1px solid var(--line);background:var(--card)}
+details{background:var(--card);border:1px solid var(--line);border-radius:10px;
+margin-bottom:10px;overflow:hidden}
+summary{cursor:pointer;padding:14px 16px;list-style:none;display:flex;gap:10px;align-items:flex-start}
+summary::-webkit-details-marker{display:none}
+.sev{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;
+color:#fff;border-radius:5px;padding:3px 7px;white-space:nowrap;margin-top:1px}
+.ttl{font-weight:550}.meta{color:var(--mut);font-size:12px;margin-top:3px}
+.body{padding:0 16px 16px;border-top:1px solid var(--line);margin-top:2px}
+.body h4{margin:14px 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut)}
+.body p,.body li{margin:4px 0}code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;overflow-x:auto}
+.urls{word-break:break-all;color:var(--mut);font-size:12px}
+.empty{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:24px;text-align:center;color:var(--mut)}
+</style></head><body><div class="wrap">
+<h1>AI Readiness Report - 127.0.0.1</h1>
+<div class="sub">Audited 2026-09-05T05:48:29+00:00 &middot;
+5 pages crawled &middot;
+5 rendered &middot;
+3.71s</div>
+<div class="score"><div><div class="big">64</div>
+<div class="sub" style="margin:0">of 100</div></div>
+<div class="dims"><div class="dim">Discoverability <b>80</b><div class="bar"><i style="width:80%"></i></div></div><div class="dim">Content Accessibility <b>58</b><div class="bar"><i style="width:58%"></i></div></div><div class="dim">Entity Clarity <b>45</b><div class="bar"><i style="width:45%"></i></div></div><div class="dim">Fact Consistency <b>100</b><div class="bar"><i style="width:100%"></i></div></div><div class="dim">Freshness <b>90</b><div class="bar"><i style="width:90%"></i></div></div><div class="dim">Engagement <b>29</b><div class="bar"><i style="width:29%"></i></div></div></div></div>
+<div class="counts"><span class="pill"><b>11</b> findings</span><span class="pill">critical 0</span><span class="pill">high 7</span><span class="pill">medium 4</span><span class="pill">low 0</span></div>
+
+<details>
+  <summary>
+    <span class="sev" style="background:#c2410c">high</span>
+    <span><span class="ttl">No Organization or WebSite structured data was found anywhere on the site</span>
+      <div class="meta">F-001 &middot; discoverability
+      &middot; stage: represent
+      &middot; priority high
+      &middot; confidence 0.98</div></span>
+  </summary>
+  <div class="body">
+    <h4>Problem</h4><p>No Organization or WebSite structured data was found anywhere on the site</p>
+    <h4>Evidence</h4><p>0 of 5 crawled HTML pages contain JSON-LD or microdata of an Organization/LocalBusiness/WebSite type.</p>
+    <p class="meta">Types observed across the site: none</p>
+    <h4>Metrics</h4><pre>{
+  &quot;pages_with_org_schema&quot;: 0,
+  &quot;html_pages&quot;: 5,
+  &quot;types_observed&quot;: []
+}</pre>
+    <h4>Why it matters</h4><p>There is no explicit machine-readable statement of who the site belongs to, so the brand&#x27;s identity, official name and linked profiles must be inferred from prose - a common cause of entity ambiguity and misattribution.</p>
+    <h4>Recommended fix</h4><p>Publish one Organization (or LocalBusiness) JSON-LD block site-wide, plus a WebSite block on the homepage.</p>
+    <ol><li>Add an Organization node with name, url, logo and a description.</li><li>Add sameAs links to the official profiles the organization controls.</li><li>Include contact details (telephone / email / address) matching the visible contact page.</li><li>Serve the block in the initial HTML on every page, or at least on the homepage and about page.</li></ol>
+    <h4>Priority &amp; confidence</h4>
+    <p class="meta">impact 0.80 (severity high) x reach 1.00 x confidence 0.98 x fixability 0.85<br>deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages; consistent across 5/5 pages</p>
+    <h4>Affected URLs</h4><p class="urls">http://demo.example/</p>
+  </div>
+</details>
+<details>
+  <summary>
+    <span class="sev" style="background:#c2410c">high</span>
+    <span><span class="ttl">Most crawled pages expose no navigation region</span>
+      <div class="meta">F-002 &middot; engagement
+      
+      &middot; priority high
+      &middot; confidence 0.98</div></span>
+  </summary>
+  <div class="body">
+    <h4>Problem</h4><p>Most crawled pages expose no navigation region</p>
+    <h4>Evidence</h4><p>0 of 5 crawled HTML pages contain a &lt;nav&gt; element or role=&quot;navigation&quot;; the homepage exposes 1 internal links in total.</p>
+    <p class="meta">Navigation was detected structurally (nav landmark plus internal links inside it), so a visually styled menu that uses neither will also be reported here.</p>
+    <h4>Metrics</h4><pre>{
+  &quot;pages_with_nav_landmark&quot;: 0,
+  &quot;pages&quot;: 5,
+  &quot;nav_share&quot;: 0.0,
+  &quot;home_internal_links&quot;: 1
+}</pre>
+    <h4>Why it matters</h4><p>Without a consistent navigation region, a visitor who lands on an interior page has no reliable way to move to the rest of the site, so the visit usually ends on the landing page.</p>
+    <h4>Recommended fix</h4><p>Provide a consistent primary navigation region on every page, marked up as a nav landmark.</p>
+    <ol><li>Wrap the primary menu in a &lt;nav&gt; element present on every template.</li><li>Include links to the main sections (offering, pricing, about, contact).</li><li>Make sure the links exist in the server-rendered HTML, not only after client-side hydration.</li></ol>
+    <h4>Priority &amp; confidence</h4>
+    <p class="meta">impact 0.80 (severity high) x reach 1.00 x confidence 0.98 x fixability 0.60<br>deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages; consistent across 5/5 pages</p>
+    <h4>Affected URLs</h4><p class="urls">http://demo.example/</p>
+  </div>
+</details>
+<details>
+  <summary>
+    <span class="sev" style="background:#c2410c">high</span>
+    <span><span class="ttl">4 of 4 product-style pages carry no Product structured data</span>
+      <div class="meta">F-003 &middot; discoverability
+      &middot; stage: extract
+      &middot; priority high
+      &middot; confidence 0.92</div></span>
+  </summary>
+  <div class="body">
+    <h4>Problem</h4><p>4 of 4 product-style pages carry no Product structured data</p>
+    <h4>Evidence</h4><p>0 of 4 pages that look like product pages expose Product/Offer structured data.</p>
+    <p class="meta">http://demo.example/products (types: none); http://demo.example/products/flow-meter (types: none); http://demo.example/products/logger (types: none); http://demo.example/products/probe (types: none)</p>
+    <h4>Metrics</h4><pre>{
+  &quot;product_pages&quot;: 4,
+  &quot;with_product_schema&quot;: 0,
+  &quot;without_product_schema&quot;: 4
+}</pre>
+    <h4>Why it matters</h4><p>Product attributes such as name, price and availability have to be guessed from layout rather than read directly, which makes extracted values less reliable.</p>
+    <h4>Recommended fix</h4><p>Add Product structured data with name, description, offers and availability.</p>
+    <ol><li>Emit a Product node per product page in the initial HTML.</li><li>Include offers.price, offers.priceCurrency and offers.availability.</li><li>Keep the structured values identical to the values shown on the page.</li></ol>
+    <h4>Priority &amp; confidence</h4>
+    <p class="meta">impact 0.80 (severity high) x reach 1.00 x confidence 0.92 x fixability 0.70<br>deterministic rule on measured values; direct DOM/HTTP observation; consistent across 4/4 pages</p>
+    <h4>Affected URLs</h4><p class="urls">http://demo.example/products, http://demo.example/products/flow-meter, http://demo.example/products/logger, http://demo.example/products/probe</p>
+  </div>
+</details>
+<details>
+  <summary>
+    <span class="sev" style="background:#c2410c">high</span>
+    <span><span class="ttl">2 likely-important page(s) offer no obvious next action</span>
+      <div class="meta">F-004 &middot; engagement
+      
+      &middot; priority high
+      &middot; confidence 0.92</div></span>
+  </summary>
+  <div class="body">
+    <h4>Problem</h4><p>2 likely-important page(s) offer no obvious next action</p>
+    <h4>Evidence</h4><p>http://demo.example/ (role: home) contains no call-to-action link or button and only 1 internal link(s); http://demo.example/products (role: products) contains no call-to-action link or button and only 3 internal link(s)</p>
+    <p class="meta">Calls to action were detected by matching common action wording on links and buttons (contact, get started, book, request, buy, subscribe and similar). That wording list is English; on a site in another language only the internal-link count is used, with a stricter threshold.</p>
+    <h4>Metrics</h4><pre>{
+  &quot;dead_end_pages&quot;: 2,
+  &quot;candidate_pages&quot;: 2,
+  &quot;primary_lang&quot;: &quot;en&quot;,
+  &quot;cta_wording_detection_applied&quot;: true
+}</pre>
+    <h4>Why it matters</h4><p>A visitor who has understood the offering has nowhere to go next, so interest does not convert into contact, signup or a deeper visit.</p>
+    <h4>Recommended fix</h4><p>Add one clear, primary next action to each of these pages.</p>
+    <ol><li>Decide the single most useful next step for each page (contact, demo, pricing, signup).</li><li>Add a clearly worded link or button for that step, in text rather than an image.</li><li>Add two or three contextual links to closely related pages.</li></ol>
+    <h4>Priority &amp; confidence</h4>
+    <p class="meta">impact 0.80 (severity high) x reach 1.00 x confidence 0.92 x fixability 0.70<br>deterministic rule on measured values; direct DOM/HTTP observation; consistent across 2/2 pages</p>
+    <h4>Affected URLs</h4><p class="urls">http://demo.example/, http://demo.example/products</p>
+  </div>
+</details>
+<details>
+  <summary>
+    <span class="sev" style="background:#c2410c">high</span>
+    <span><span class="ttl">2 likely-important page(s) contain very little extractable text</span>
+      <div class="meta">F-005 &middot; discoverability
+      &middot; stage: understand
+      &middot; priority high
+      &middot; confidence 0.92</div></span>
+  </summary>
+  <div class="body">
+    <h4>Problem</h4><p>2 likely-important page(s) contain very little extractable text</p>
+    <h4>Evidence</h4><p>http://demo.example/ (role: home) has 43 words of visible text; http://demo.example/products (role: products) has 48 words of visible text</p>
+    <p class="meta">Threshold used: fewer than 80 words. Pages whose text is supplied by JavaScript are excluded here and reported under the rendering check instead, as are contact and legal pages and navigation hubs, which are short by design.</p>
+    <h4>Metrics</h4><pre>{
+  &quot;thin_pages&quot;: 2,
+  &quot;threshold_words&quot;: 80,
+  &quot;word_counts&quot;: {
+    &quot;http://demo.example/&quot;: 43,
+    &quot;http://demo.example/products&quot;: 48
+  }
+}</pre>
+    <h4>Why it matters</h4><p>There is little textual substance for an automated system to summarise or quote, so the page is unlikely to be used as a source even when it is retrieved.</p>
+    <h4>Recommended fix</h4><p>Express the key information of these pages as readable body text.</p>
+    <ol><li>Identify the facts the page is meant to convey.</li><li>Write them into the page body as text rather than as images or downloads.</li><li>Keep headings descriptive so the structure explains the content.</li></ol>
+    <h4>Priority &amp; confidence</h4>
+    <p class="meta">impact 0.80 (severity high) x reach 1.00 x confidence 0.92 x fixability 0.50<br>deterministic rule on measured values; direct DOM/HTTP observation; consistent across 2/2 pages</p>
+    <h4>Affected URLs</h4><p class="urls">http://demo.example/, http://demo.example/products</p>
+  </div>
+</details>
+<details>
+  <summary>
+    <span class="sev" style="background:#c2410c">high</span>
+    <span><span class="ttl">The homepage does not clearly state what the site is or what it offers</span>
+      <div class="meta">F-006 &middot; engagement
+      
+      &middot; priority medium
+      &middot; confidence 0.82</div></span>
+  </summary>
+  <div class="body">
+    <h4>Problem</h4><p>The homepage does not clearly state what the site is or what it offers</p>
+    <h4>Evidence</h4><p>On the homepage, the page title is &#x27;Home&#x27;, which does not name the brand or what the site is for; there is no H1 heading stating what the site is.</p>
+    <p class="meta">First 200 characters of visible homepage text: &#x27;Our team designs and delivers measurement hardware for laboratories. Every instrument is calibrated in house and shipped with a traceable certificate. We support installation, training and annual serv&#x27;</p>
+    <h4>Metrics</h4><pre>{
+  &quot;title&quot;: &quot;Home&quot;,
+  &quot;h1_count&quot;: 0,
+  &quot;word_count&quot;: 43,
+  &quot;meta_description_present&quot;: false,
+  &quot;primary_lang&quot;: &quot;en&quot;,
+  &quot;language_dependent_checks_applied&quot;: true
+}</pre>
+    <h4>Why it matters</h4><p>A visitor arriving from an AI answer or a search result has to work out what the organization does before deciding to stay, which is the point at which most arrivals are lost.</p>
+    <h4>Recommended fix</h4><p>State the offering in the title, the H1 and the opening paragraph of the homepage.</p>
+    <ol><li>Write a title of the form &#x27;&lt;Brand&gt; - &lt;what it does for whom&gt;&#x27;.</li><li>Make the H1 a plain-language statement of the offering.</li><li>Put a one-sentence summary of the offering in the first visible paragraph.</li><li>Add a meta description repeating that summary.</li></ol>
+    <h4>Priority &amp; confidence</h4>
+    <p class="meta">impact 0.80 (severity high) x reach 1.00 x confidence 0.82 x fixability 0.60<br>deterministic rule on measured values; direct DOM/HTTP observation; single-page sample; consistent across 1/1 pages</p>
+    <h4>Affected URLs</h4><p class="urls">http://demo.example/</p>
+  </div>
+</details>
+<details>
+  <summary>
+    <span class="sev" style="background:#c2410c">high</span>
+    <span><span class="ttl">Substantial page content is absent from the initial HTML and appears only after JavaScript execution</span>
+      <div class="meta">F-007 &middot; discoverability
+      &middot; stage: extract
+      &middot; priority medium
+      &middot; confidence 0.93</div></span>
+  </summary>
+  <div class="body">
+    <h4>Problem</h4><p>Substantial page content is absent from the initial HTML and appears only after JavaScript execution</p>
+    <h4>Evidence</h4><p>On http://demo.example/products/flow-meter the initial HTML contains 5 words of visible text while the rendered DOM contains 81 (93% of the visible text is added by JavaScript).</p>
+    <p class="meta">http://demo.example/products/flow-meter: raw 5w -&gt; rendered 81w (93% added); http://demo.example/products/logger: raw 5w -&gt; rendered 81w (93% added); http://demo.example/products/probe: raw 5w -&gt; rendered 81w (93% added)</p>
+    <h4>Metrics</h4><pre>{
+  &quot;js_dependent_pages&quot;: 3,
+  &quot;rendered_pages&quot;: 5,
+  &quot;max_added_word_ratio&quot;: 0.938,
+  &quot;threshold&quot;: 0.35,
+  &quot;rendered_only_excerpt&quot;: &quot;Flow meter FM-200 Our team designs and delivers measurement hardware for laboratories. Every instrument is calibrated in house and shipped with a traceable certificate. We support installation, training and annual servicing for research groups and industrial q...&quot;
+}</pre>
+    <h4>Why it matters</h4><p>Retrieval clients that do not execute JavaScript see only a fraction of the page, so product, pricing or company facts that live in the rendered DOM may not be extracted at all.</p>
+    <h4>Recommended fix</h4><p>Serve the primary content of these pages in the initial HTML response (server-side rendering, static generation or hydration of pre-rendered markup).</p>
+    <ol><li>Identify which content blocks are injected client-side on the listed pages.</li><li>Render that content server-side (SSR/SSG) or inline it as pre-rendered markup that hydration replaces.</li><li>Re-test with JavaScript disabled and confirm the key facts appear in the raw HTML.</li><li>Where full SSR is impractical, mirror the key facts in JSON-LD delivered in the initial HTML.</li></ol>
+    <h4>Priority &amp; confidence</h4>
+    <p class="meta">impact 0.80 (severity high) x reach 0.60 x confidence 0.93 x fixability 0.35<br>deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages</p>
+    <h4>Affected URLs</h4><p class="urls">http://demo.example/products/flow-meter, http://demo.example/products/logger, http://demo.example/products/probe</p>
+  </div>
+</details>
+<details>
+  <summary>
+    <span class="sev" style="background:#a16207">medium</span>
+    <span><span class="ttl">2 likely-important page(s) have no H1 heading</span>
+      <div class="meta">F-008 &middot; discoverability
+      &middot; stage: understand
+      &middot; priority medium
+      &middot; confidence 0.92</div></span>
+  </summary>
+  <div class="body">
+    <h4>Problem</h4><p>2 likely-important page(s) have no H1 heading</p>
+    <h4>Evidence</h4><p>http://demo.example/ has no &lt;h1&gt; (0 headings of any level); http://demo.example/products has no &lt;h1&gt; (0 headings of any level)</p>
+    
+    <h4>Metrics</h4><pre>{
+  &quot;pages_without_h1&quot;: 2,
+  &quot;important_pages&quot;: 2
+}</pre>
+    <h4>Why it matters</h4><p>Without a top-level heading the page&#x27;s subject has to be inferred from the title alone, which weakens topical understanding.</p>
+    <h4>Recommended fix</h4><p>Give each of these pages one descriptive H1 that names its subject.</p>
+    <ol><li>Add a single &lt;h1&gt; stating what the page is about.</li><li>Keep the heading hierarchy ordered (h1 then h2 then h3).</li><li>Avoid using an image of text as the page heading.</li></ol>
+    <h4>Priority &amp; confidence</h4>
+    <p class="meta">impact 0.50 (severity medium) x reach 1.00 x confidence 0.92 x fixability 0.95<br>deterministic rule on measured values; direct DOM/HTTP observation; consistent across 2/2 pages</p>
+    <h4>Affected URLs</h4><p class="urls">http://demo.example/, http://demo.example/products</p>
+  </div>
+</details>
+<details>
+  <summary>
+    <span class="sev" style="background:#a16207">medium</span>
+    <span><span class="ttl">Potential freshness risk: the most recent dates on the site are several years old</span>
+      <div class="meta">F-009 &middot; discoverability
+      &middot; stage: trust
+      &middot; priority medium
+      &middot; confidence 0.8</div></span>
+  </summary>
+  <div class="body">
+    <h4>Problem</h4><p>Potential freshness risk: the most recent dates on the site are several years old</p>
+    <h4>Evidence</h4><p>5 of 5 dated pages show no date later than 2025; the newest date found anywhere on the crawled pages is 2016.</p>
+    <p class="meta">Dates were read from time elements, article metadata and JSON-LD datePublished/dateModified values. An old date does not prove the content is out of date - it only means nothing on the page signals recency.</p>
+    <h4>Metrics</h4><pre>{
+  &quot;dated_pages&quot;: 5,
+  &quot;pages_at_or_before_cutoff&quot;: 5,
+  &quot;cutoff_year&quot;: 2025,
+  &quot;newest_year_found&quot;: 2016
+}</pre>
+    <h4>Why it matters</h4><p>Without a recent date signal, automated systems have no evidence that the information still holds, so they may prefer more recently dated third-party sources when describing the brand.</p>
+    <h4>Recommended fix</h4><p>Publish explicit last-updated dates and refresh the pages whose facts have changed.</p>
+    <ol><li>Review the listed pages and correct any facts that have changed.</li><li>Add dateModified to the page&#x27;s structured data when content is revised.</li><li>Show a visible &#x27;last updated&#x27; date on pages where recency matters.</li><li>Avoid auto-bumping dates on unchanged pages - that removes the signal&#x27;s value.</li></ol>
+    <h4>Priority &amp; confidence</h4>
+    <p class="meta">impact 0.50 (severity medium) x reach 1.00 x confidence 0.80 x fixability 0.60<br>deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages; consistent across 5/5 pages; conflicting signals present</p>
+    <h4>Affected URLs</h4><p class="urls">http://demo.example/, http://demo.example/products, http://demo.example/products/flow-meter, http://demo.example/products/logger, http://demo.example/products/probe</p>
+  </div>
+</details>
+<details>
+  <summary>
+    <span class="sev" style="background:#a16207">medium</span>
+    <span><span class="ttl">No XML sitemap was found</span>
+      <div class="meta">F-010 &middot; discoverability
+      &middot; stage: discover
+      &middot; priority medium
+      &middot; confidence 0.9</div></span>
+  </summary>
+  <div class="body">
+    <h4>Problem</h4><p>No XML sitemap was found</p>
+    <h4>Evidence</h4><p>Neither /sitemap.xml nor any Sitemap: directive in robots.txt returned a usable sitemap.</p>
+    <p class="meta">5 HTML pages were reachable by link following.</p>
+    <h4>Metrics</h4><pre>{
+  &quot;sitemap_locations_tried&quot;: [
+    &quot;/sitemap.xml&quot;
+  ],
+  &quot;html_pages_crawled&quot;: 5
+}</pre>
+    <h4>Why it matters</h4><p>Without a sitemap, automated systems must rely entirely on link discovery, so pages that are weakly linked may never be reached.</p>
+    <h4>Recommended fix</h4><p>Publish an XML sitemap and reference it from robots.txt.</p>
+    <ol><li>Generate a sitemap listing canonical URLs of the public pages.</li><li>Serve it at /sitemap.xml with HTTP 200 and content-type application/xml.</li><li>Add a &#x27;Sitemap: https://&lt;host&gt;/sitemap.xml&#x27; line to robots.txt.</li></ol>
+    <h4>Priority &amp; confidence</h4>
+    <p class="meta">impact 0.50 (severity medium) x reach 0.50 x confidence 0.90 x fixability 0.90<br>deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages</p>
+    <h4>Affected URLs</h4><p class="urls">http://demo.example/</p>
+  </div>
+</details>
+<details>
+  <summary>
+    <span class="sev" style="background:#a16207">medium</span>
+    <span><span class="ttl">1 page(s) contain a JSON-LD block that does not parse</span>
+      <div class="meta">F-011 &middot; discoverability
+      &middot; stage: extract
+      &middot; priority low
+      &middot; confidence 0.9</div></span>
+  </summary>
+  <div class="body">
+    <h4>Problem</h4><p>1 page(s) contain a JSON-LD block that does not parse</p>
+    <h4>Evidence</h4><p>http://demo.example/: JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 59 (char 58)</p>
+    <p class="meta">The block is present in the HTML but is not valid JSON, so a consumer must discard it entirely.</p>
+    <h4>Metrics</h4><pre>{
+  &quot;pages_with_invalid_jsonld&quot;: 1,
+  &quot;pages_checked&quot;: 5
+}</pre>
+    <h4>Why it matters</h4><p>Structured data that fails to parse provides no machine-readable facts at all, so the effort of publishing it is wasted and the page falls back to text interpretation.</p>
+    <h4>Recommended fix</h4><p>Fix the JSON syntax so each ld+json block parses, then validate the vocabulary.</p>
+    <ol><li>Run each block through a JSON parser and correct the syntax error reported here.</li><li>Escape quotes and remove trailing commas in templated values.</li><li>Validate the corrected block against schema.org expectations for its @type.</li></ol>
+    <h4>Priority &amp; confidence</h4>
+    <p class="meta">impact 0.50 (severity medium) x reach 0.20 x confidence 0.90 x fixability 0.85<br>deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages</p>
+    <h4>Affected URLs</h4><p class="urls">http://demo.example/</p>
+  </div>
+</details>
+</div></body></html>

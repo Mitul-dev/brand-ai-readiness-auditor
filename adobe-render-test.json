@@ -1,0 +1,402 @@
+{
+  "site": "adobe.com",
+  "audited_at": "2026-09-05T13:39:28+00:00",
+  "summary": {
+    "total_findings": 8,
+    "critical": 0,
+    "high": 3,
+    "medium": 4,
+    "low": 1,
+    "ai_readiness_score": 80,
+    "pages_crawled": 20,
+    "pages_rendered": 0,
+    "important_pages": 5,
+    "runtime_seconds": 57.35
+  },
+  "ai_readiness": {
+    "overall": 80,
+    "dimensions": {
+      "Discoverability": 73,
+      "Content Accessibility": 94,
+      "Entity Clarity": 71,
+      "Fact Consistency": 100,
+      "Freshness": null,
+      "Engagement": 68
+    },
+    "dimension_keys": {
+      "discoverability": 73,
+      "content_accessibility": 94,
+      "entity_clarity": 71,
+      "fact_consistency": 100,
+      "freshness": null,
+      "engagement": 68
+    },
+    "explanation": {
+      "Discoverability": "73/100 after 3 finding(s): 2 likely-important page(s) carry a noindex directive (-15); No XML sitemap was found (-8); 2 likely-important page(s) have no H1 heading (-3)",
+      "Content Accessibility": "94/100 after 1 finding(s): 1 likely-important page(s) contain very little extractable text (-6)",
+      "Entity Clarity": "71/100 after 2 finding(s): 3 of 3 product-style pages carry no Product structured data (-24); 1 page(s) publish structured data that parses but is missing expected properties or contains placeholders (-5)",
+      "Fact Consistency": "100/100 - no findings in this dimension",
+      "Freshness": "not applicable: no evidence of this kind was observable on this site",
+      "Engagement": "68/100 after 2 finding(s): Most crawled pages expose no navigation region (-25); 1 likely-important page(s) offer no obvious next action (-6)"
+    },
+    "applicable": {
+      "discoverability": true,
+      "content_accessibility": true,
+      "entity_clarity": true,
+      "fact_consistency": true,
+      "freshness": false,
+      "engagement": true
+    },
+    "method": "Each dimension starts at 100 and loses severity_penalty x (0.4 + 0.6 x reach) x confidence for every finding attributed to it. The overall score is the weighted mean of the applicable dimensions."
+  },
+  "site_context": {
+    "target_url": "https://www.adobe.com/",
+    "home_status": 200,
+    "robots_present": false,
+    "robots_blocks_site": false,
+    "sitemap_present": false,
+    "sitemap_url_count": 0,
+    "renderer_available": true,
+    "crawl_budget_exhausted": false,
+    "page_roles": {
+      "other": 12,
+      "products": 3,
+      "legal": 2,
+      "home": 1,
+      "pricing": 1,
+      "blog": 1
+    },
+    "notes": [
+      "rendering was attempted but no page rendered successfully (Error: Page.goto: net::ERR_HTTP2_PROTOCOL_ERROR at https://www.adobe.com/\nCall log:\n  - navigating to \"https://www.adobe.com/\", waiting until \"domcontentloaded\"\n); raw-vs-rendered checks were not applicable for this run"
+    ]
+  },
+  "findings": [
+    {
+      "id": "F-001",
+      "title": "Most crawled pages expose no navigation region",
+      "severity": "high",
+      "evidence": "0 of 13 crawled HTML pages contain a <nav> element or role=\"navigation\"; the homepage exposes 22 internal links in total. Navigation was detected structurally (nav landmark plus internal links inside it), so a visually styled menu that uses neither will also be reported here.",
+      "suggested_action": {
+        "summary": "Provide a consistent primary navigation region on every page, marked up as a nav landmark.",
+        "priority": "high",
+        "steps": [
+          "Wrap the primary menu in a <nav> element present on every template.",
+          "Include links to the main sections (offering, pricing, about, contact).",
+          "Make sure the links exist in the server-rendered HTML, not only after client-side hydration."
+        ]
+      },
+      "category": "engagement",
+      "journey_stage": null,
+      "check_id": "weak_navigation",
+      "confidence": 0.98,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; sample of 13 pages; consistent across 13/13 pages",
+      "impact": "Without a consistent navigation region, a visitor who lands on an interior page has no reliable way to move to the rest of the site, so the visit usually ends on the landing page.",
+      "priority_score": 0.6429,
+      "priority_reason": "impact 0.80 (severity high) x reach 1.00 x confidence 0.98 x fixability 0.60",
+      "reach": 1.0,
+      "affected_urls": [
+        "https://www.adobe.com/"
+      ],
+      "technical_details": {
+        "url": "https://www.adobe.com/",
+        "observation": "0 of 13 crawled HTML pages contain a <nav> element or role=\"navigation\"; the homepage exposes 22 internal links in total.",
+        "details": "Navigation was detected structurally (nav landmark plus internal links inside it), so a visually styled menu that uses neither will also be reported here.",
+        "metrics": {
+          "pages_with_nav_landmark": 0,
+          "pages": 13,
+          "nav_share": 0.0,
+          "home_internal_links": 22
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": []
+    },
+    {
+      "id": "F-002",
+      "title": "3 of 3 product-style pages carry no Product structured data",
+      "severity": "high",
+      "evidence": "0 of 3 pages that look like product pages expose Product/Offer structured data. https://www.adobe.com/products/firefly.html (types: none); https://www.adobe.com/homepage/fragments/loggedout/redesign/default/all-products-card/all-products-card (types: none); https://www.adobe.com/products/catalog.html (types: none)",
+      "suggested_action": {
+        "summary": "Add Product structured data with name, description, offers and availability.",
+        "priority": "high",
+        "steps": [
+          "Emit a Product node per product page in the initial HTML.",
+          "Include offers.price, offers.priceCurrency and offers.availability.",
+          "Keep the structured values identical to the values shown on the page."
+        ]
+      },
+      "category": "discoverability",
+      "journey_stage": "extract",
+      "check_id": "missing_product_structured_data",
+      "confidence": 0.92,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; consistent across 3/3 pages",
+      "impact": "Product attributes such as name, price and availability have to be guessed from layout rather than read directly, which makes extracted values less reliable.",
+      "priority_score": 0.6366,
+      "priority_reason": "impact 0.80 (severity high) x reach 1.00 x confidence 0.92 x fixability 0.70",
+      "reach": 1.0,
+      "affected_urls": [
+        "https://www.adobe.com/products/firefly.html",
+        "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/all-products-card/all-products-card",
+        "https://www.adobe.com/products/catalog.html"
+      ],
+      "technical_details": {
+        "url": "https://www.adobe.com/products/firefly.html",
+        "observation": "0 of 3 pages that look like product pages expose Product/Offer structured data.",
+        "details": "https://www.adobe.com/products/firefly.html (types: none); https://www.adobe.com/homepage/fragments/loggedout/redesign/default/all-products-card/all-products-card (types: none); https://www.adobe.com/products/catalog.html (types: none)",
+        "metrics": {
+          "product_pages": 3,
+          "with_product_schema": 0,
+          "without_product_schema": 3
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": []
+    },
+    {
+      "id": "F-003",
+      "title": "2 likely-important page(s) carry a noindex directive",
+      "severity": "high",
+      "evidence": "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/en-lingo/marquee-sub-copy/ste/default has <meta name=\"robots\" content=\"noindex, nofollow\">; https://www.adobe.com/homepage/fragments/loggedout/redesign/default/all-products-card/all-products-card has <meta name=\"robots\" content=\"noindex, nofollow\">",
+      "suggested_action": {
+        "summary": "Remove the noindex directive from pages that are meant to be public.",
+        "priority": "medium",
+        "steps": [
+          "Confirm each listed page is intended to be publicly discoverable.",
+          "Remove the noindex value from the robots meta tag / X-Robots-Tag header.",
+          "Keep noindex only on genuinely private or duplicate URLs."
+        ]
+      },
+      "category": "discoverability",
+      "journey_stage": "access",
+      "check_id": "noindex_on_important_page",
+      "confidence": 0.93,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages",
+      "impact": "A noindex directive asks retrieval systems not to keep the page, so its content is unlikely to be surfaced or cited even though it is publicly reachable.",
+      "priority_score": 0.4538,
+      "priority_reason": "impact 0.80 (severity high) x reach 0.40 x confidence 0.93 x fixability 1.00",
+      "reach": 0.4,
+      "affected_urls": [
+        "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/en-lingo/marquee-sub-copy/ste/default",
+        "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/all-products-card/all-products-card"
+      ],
+      "technical_details": {
+        "url": "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/en-lingo/marquee-sub-copy/ste/default",
+        "observation": "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/en-lingo/marquee-sub-copy/ste/default has <meta name=\"robots\" content=\"noindex, nofollow\">; https://www.adobe.com/homepage/fragments/loggedout/redesign/default/all-products-card/all-products-card has <meta name=\"robots\" content=\"noindex, nofollow\">",
+        "details": "",
+        "metrics": {
+          "noindex_pages": 2,
+          "important_pages": 5
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": []
+    },
+    {
+      "id": "F-004",
+      "title": "No XML sitemap was found",
+      "severity": "medium",
+      "evidence": "Neither /sitemap.xml nor any Sitemap: directive in robots.txt returned a usable sitemap. 13 HTML pages were reachable by link following.",
+      "suggested_action": {
+        "summary": "Publish an XML sitemap and reference it from robots.txt.",
+        "priority": "medium",
+        "steps": [
+          "Generate a sitemap listing canonical URLs of the public pages.",
+          "Serve it at /sitemap.xml with HTTP 200 and content-type application/xml.",
+          "Add a 'Sitemap: https://<host>/sitemap.xml' line to robots.txt."
+        ]
+      },
+      "category": "discoverability",
+      "journey_stage": "discover",
+      "check_id": "sitemap_missing",
+      "confidence": 0.9,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; sample of 13 pages",
+      "impact": "Without a sitemap, automated systems must rely entirely on link discovery, so pages that are weakly linked may never be reached.",
+      "priority_score": 0.2901,
+      "priority_reason": "impact 0.50 (severity medium) x reach 0.50 x confidence 0.90 x fixability 0.90",
+      "reach": 0.5,
+      "affected_urls": [
+        "https://www.adobe.com/"
+      ],
+      "technical_details": {
+        "url": "https://www.adobe.com/",
+        "observation": "Neither /sitemap.xml nor any Sitemap: directive in robots.txt returned a usable sitemap.",
+        "details": "13 HTML pages were reachable by link following.",
+        "metrics": {
+          "sitemap_locations_tried": [
+            "/sitemap.xml"
+          ],
+          "html_pages_crawled": 13
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": []
+    },
+    {
+      "id": "F-005",
+      "title": "1 likely-important page(s) offer no obvious next action",
+      "severity": "medium",
+      "evidence": "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/en-lingo/marquee-sub-copy/ste/default (role: pricing) contains no call-to-action link or button and only 3 internal link(s) Calls to action were detected by matching common action wording on links and buttons (contact, get started, book, request, buy, subscribe and similar). That wording list is English; on a site in another language only the internal-link count is used, with a stricter threshold.",
+      "suggested_action": {
+        "summary": "Add one clear, primary next action to each of these pages.",
+        "priority": "low",
+        "steps": [
+          "Decide the single most useful next step for each page (contact, demo, pricing, signup).",
+          "Add a clearly worded link or button for that step, in text rather than an image.",
+          "Add two or three contextual links to closely related pages."
+        ]
+      },
+      "category": "engagement",
+      "journey_stage": null,
+      "check_id": "no_next_step",
+      "confidence": 0.9,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages",
+      "impact": "A visitor who has understood the offering has nowhere to go next, so interest does not convert into contact, signup or a deeper visit.",
+      "priority_score": 0.1868,
+      "priority_reason": "impact 0.50 (severity medium) x reach 0.20 x confidence 0.90 x fixability 0.70",
+      "reach": 0.2,
+      "affected_urls": [
+        "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/en-lingo/marquee-sub-copy/ste/default"
+      ],
+      "technical_details": {
+        "url": "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/en-lingo/marquee-sub-copy/ste/default",
+        "observation": "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/en-lingo/marquee-sub-copy/ste/default (role: pricing) contains no call-to-action link or button and only 3 internal link(s)",
+        "details": "Calls to action were detected by matching common action wording on links and buttons (contact, get started, book, request, buy, subscribe and similar). That wording list is English; on a site in another language only the internal-link count is used, with a stricter threshold.",
+        "metrics": {
+          "dead_end_pages": 1,
+          "candidate_pages": 5,
+          "primary_lang": "undeclared",
+          "cta_wording_detection_applied": true
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": []
+    },
+    {
+      "id": "F-006",
+      "title": "1 page(s) publish structured data that parses but is missing expected properties or contains placeholders",
+      "severity": "medium",
+      "evidence": "https://www.adobe.com/: Organization node has no 'name'; Organization node has no 'url' Checked the shape of syntactically valid JSON-LD: expected properties for the declared @type, empty values, and unreplaced template placeholders.",
+      "suggested_action": {
+        "summary": "Populate the expected properties for each declared type and remove template placeholders.",
+        "priority": "low",
+        "steps": [
+          "Fix the specific properties listed in this finding.",
+          "Replace any templating placeholder with the real value at render time.",
+          "Validate the corrected blocks against schema.org for their @type.",
+          "Add a build-time check so an empty required property fails CI."
+        ]
+      },
+      "category": "discoverability",
+      "journey_stage": "extract",
+      "check_id": "incomplete_structured_data",
+      "confidence": 0.9,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; sample of 13 pages",
+      "impact": "Structured data that lacks its identifying properties gives a consumer nothing to attach the facts to, so the block is published but cannot be used - and a placeholder value can put an outright wrong fact into machine-readable form.",
+      "priority_score": 0.1741,
+      "priority_reason": "impact 0.50 (severity medium) x reach 0.10 x confidence 0.90 x fixability 0.85",
+      "reach": 0.077,
+      "affected_urls": [
+        "https://www.adobe.com/"
+      ],
+      "technical_details": {
+        "url": "https://www.adobe.com/",
+        "observation": "https://www.adobe.com/: Organization node has no 'name'; Organization node has no 'url'",
+        "details": "Checked the shape of syntactically valid JSON-LD: expected properties for the declared @type, empty values, and unreplaced template placeholders.",
+        "metrics": {
+          "pages_with_defects": 1,
+          "pages_checked": 13,
+          "defects": {
+            "https://www.adobe.com/": [
+              "Organization node has no 'name'",
+              "Organization node has no 'url'"
+            ]
+          }
+        }
+      },
+      "possible_benign_explanations": [
+        "A property that genuinely does not apply to the entity is better omitted than filled with a placeholder; verify per property."
+      ],
+      "merged_from_checks": []
+    },
+    {
+      "id": "F-007",
+      "title": "1 likely-important page(s) contain very little extractable text",
+      "severity": "medium",
+      "evidence": "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/en-lingo/marquee-sub-copy/ste/default (role: pricing) has 23 words of visible text Threshold used: fewer than 80 words. Pages whose text is supplied by JavaScript are excluded here and reported under the rendering check instead, as are contact and legal pages and navigation hubs, which are short by design.",
+      "suggested_action": {
+        "summary": "Express the key information of these pages as readable body text.",
+        "priority": "low",
+        "steps": [
+          "Identify the facts the page is meant to convey.",
+          "Write them into the page body as text rather than as images or downloads.",
+          "Keep headings descriptive so the structure explains the content."
+        ]
+      },
+      "category": "discoverability",
+      "journey_stage": "understand",
+      "check_id": "thin_important_page",
+      "confidence": 0.9,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages",
+      "impact": "There is little textual substance for an automated system to summarise or quote, so the page is unlikely to be used as a source even when it is retrieved.",
+      "priority_score": 0.1674,
+      "priority_reason": "impact 0.50 (severity medium) x reach 0.20 x confidence 0.90 x fixability 0.50",
+      "reach": 0.2,
+      "affected_urls": [
+        "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/en-lingo/marquee-sub-copy/ste/default"
+      ],
+      "technical_details": {
+        "url": "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/en-lingo/marquee-sub-copy/ste/default",
+        "observation": "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/en-lingo/marquee-sub-copy/ste/default (role: pricing) has 23 words of visible text",
+        "details": "Threshold used: fewer than 80 words. Pages whose text is supplied by JavaScript are excluded here and reported under the rendering check instead, as are contact and legal pages and navigation hubs, which are short by design.",
+        "metrics": {
+          "thin_pages": 1,
+          "threshold_words": 80,
+          "word_counts": {
+            "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/en-lingo/marquee-sub-copy/ste/default": 23
+          }
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": []
+    },
+    {
+      "id": "F-008",
+      "title": "2 likely-important page(s) have no H1 heading",
+      "severity": "low",
+      "evidence": "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/en-lingo/marquee-sub-copy/ste/default has no <h1> (0 headings of any level); https://www.adobe.com/homepage/fragments/loggedout/redesign/default/all-products-card/all-products-card has no <h1> (9 headings of any level)",
+      "suggested_action": {
+        "summary": "Give each of these pages one descriptive H1 that names its subject.",
+        "priority": "low",
+        "steps": [
+          "Add a single <h1> stating what the page is about.",
+          "Keep the heading hierarchy ordered (h1 then h2 then h3).",
+          "Avoid using an image of text as the page heading."
+        ]
+      },
+      "category": "discoverability",
+      "journey_stage": "understand",
+      "check_id": "missing_h1",
+      "confidence": 0.93,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages",
+      "impact": "Without a top-level heading the page's subject has to be inferred from the title alone, which weakens topical understanding.",
+      "priority_score": 0.1386,
+      "priority_reason": "impact 0.25 (severity low) x reach 0.40 x confidence 0.93 x fixability 0.95",
+      "reach": 0.4,
+      "affected_urls": [
+        "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/en-lingo/marquee-sub-copy/ste/default",
+        "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/all-products-card/all-products-card"
+      ],
+      "technical_details": {
+        "url": "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/en-lingo/marquee-sub-copy/ste/default",
+        "observation": "https://www.adobe.com/homepage/fragments/loggedout/redesign/default/en-lingo/marquee-sub-copy/ste/default has no <h1> (0 headings of any level); https://www.adobe.com/homepage/fragments/loggedout/redesign/default/all-products-card/all-products-card has no <h1> (9 headings of any level)",
+        "details": "",
+        "metrics": {
+          "pages_without_h1": 2,
+          "important_pages": 5
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": []
+    }
+  ]
+}

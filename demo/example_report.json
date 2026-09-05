@@ -1,0 +1,528 @@
+{
+  "site": "127.0.0.1",
+  "audited_at": "2026-09-05T05:48:29+00:00",
+  "summary": {
+    "total_findings": 11,
+    "critical": 0,
+    "high": 7,
+    "medium": 4,
+    "low": 0,
+    "ai_readiness_score": 64,
+    "pages_crawled": 5,
+    "pages_rendered": 5,
+    "important_pages": 2,
+    "runtime_seconds": 3.71
+  },
+  "ai_readiness": {
+    "overall": 64,
+    "dimensions": {
+      "Discoverability": 80,
+      "Content Accessibility": 58,
+      "Entity Clarity": 45,
+      "Fact Consistency": 100,
+      "Freshness": 90,
+      "Engagement": 29
+    },
+    "dimension_keys": {
+      "discoverability": 80,
+      "content_accessibility": 58,
+      "entity_clarity": 45,
+      "fact_consistency": 100,
+      "freshness": 90,
+      "engagement": 29
+    },
+    "explanation": {
+      "Discoverability": "80/100 after 2 finding(s): 2 likely-important page(s) have no H1 heading (-12); No XML sitemap was found (-8)",
+      "Content Accessibility": "58/100 after 2 finding(s): 2 likely-important page(s) contain very little extractable text (-24); Substantial page content is absent from the initial HTML and appears only after JavaScript execution (-18)",
+      "Entity Clarity": "45/100 after 3 finding(s): No Organization or WebSite structured data was found anywhere on the site (-25); 4 of 4 product-style pages carry no Product structured data (-24); 1 page(s) contain a JSON-LD block that does not parse (-6)",
+      "Fact Consistency": "100/100 - no findings in this dimension",
+      "Freshness": "90/100 after 1 finding(s): Potential freshness risk: the most recent dates on the site are several years old (-10)",
+      "Engagement": "29/100 after 3 finding(s): Most crawled pages expose no navigation region (-25); 2 likely-important page(s) offer no obvious next action (-24); The homepage does not clearly state what the site is or what it offers (-21)"
+    },
+    "applicable": {
+      "discoverability": true,
+      "content_accessibility": true,
+      "entity_clarity": true,
+      "fact_consistency": true,
+      "freshness": true,
+      "engagement": true
+    },
+    "method": "Each dimension starts at 100 and loses severity_penalty x (0.4 + 0.6 x reach) x confidence for every finding attributed to it. The overall score is the weighted mean of the applicable dimensions."
+  },
+  "site_context": {
+    "target_url": "http://demo.example/",
+    "home_status": 200,
+    "robots_present": true,
+    "robots_blocks_site": false,
+    "sitemap_present": false,
+    "sitemap_url_count": 0,
+    "renderer_available": true,
+    "crawl_budget_exhausted": false,
+    "page_roles": {
+      "products": 4,
+      "home": 1
+    },
+    "notes": []
+  },
+  "findings": [
+    {
+      "id": "F-001",
+      "title": "No Organization or WebSite structured data was found anywhere on the site",
+      "severity": "high",
+      "evidence": "0 of 5 crawled HTML pages contain JSON-LD or microdata of an Organization/LocalBusiness/WebSite type. Types observed across the site: none",
+      "suggested_action": {
+        "summary": "Publish one Organization (or LocalBusiness) JSON-LD block site-wide, plus a WebSite block on the homepage.",
+        "priority": "high",
+        "steps": [
+          "Add an Organization node with name, url, logo and a description.",
+          "Add sameAs links to the official profiles the organization controls.",
+          "Include contact details (telephone / email / address) matching the visible contact page.",
+          "Serve the block in the initial HTML on every page, or at least on the homepage and about page."
+        ]
+      },
+      "category": "discoverability",
+      "journey_stage": "represent",
+      "check_id": "missing_organization_identity",
+      "confidence": 0.98,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages; consistent across 5/5 pages",
+      "impact": "There is no explicit machine-readable statement of who the site belongs to, so the brand's identity, official name and linked profiles must be inferred from prose - a common cause of entity ambiguity and misattribution.",
+      "priority_score": 0.7311,
+      "priority_reason": "impact 0.80 (severity high) x reach 1.00 x confidence 0.98 x fixability 0.85",
+      "reach": 1.0,
+      "affected_urls": [
+        "http://demo.example/"
+      ],
+      "technical_details": {
+        "url": "http://demo.example/",
+        "observation": "0 of 5 crawled HTML pages contain JSON-LD or microdata of an Organization/LocalBusiness/WebSite type.",
+        "details": "Types observed across the site: none",
+        "metrics": {
+          "pages_with_org_schema": 0,
+          "html_pages": 5,
+          "types_observed": []
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": []
+    },
+    {
+      "id": "F-002",
+      "title": "Most crawled pages expose no navigation region",
+      "severity": "high",
+      "evidence": "0 of 5 crawled HTML pages contain a <nav> element or role=\"navigation\"; the homepage exposes 1 internal links in total. Navigation was detected structurally (nav landmark plus internal links inside it), so a visually styled menu that uses neither will also be reported here.",
+      "suggested_action": {
+        "summary": "Provide a consistent primary navigation region on every page, marked up as a nav landmark.",
+        "priority": "high",
+        "steps": [
+          "Wrap the primary menu in a <nav> element present on every template.",
+          "Include links to the main sections (offering, pricing, about, contact).",
+          "Make sure the links exist in the server-rendered HTML, not only after client-side hydration."
+        ]
+      },
+      "category": "engagement",
+      "journey_stage": null,
+      "check_id": "weak_navigation",
+      "confidence": 0.98,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages; consistent across 5/5 pages",
+      "impact": "Without a consistent navigation region, a visitor who lands on an interior page has no reliable way to move to the rest of the site, so the visit usually ends on the landing page.",
+      "priority_score": 0.6429,
+      "priority_reason": "impact 0.80 (severity high) x reach 1.00 x confidence 0.98 x fixability 0.60",
+      "reach": 1.0,
+      "affected_urls": [
+        "http://demo.example/"
+      ],
+      "technical_details": {
+        "url": "http://demo.example/",
+        "observation": "0 of 5 crawled HTML pages contain a <nav> element or role=\"navigation\"; the homepage exposes 1 internal links in total.",
+        "details": "Navigation was detected structurally (nav landmark plus internal links inside it), so a visually styled menu that uses neither will also be reported here.",
+        "metrics": {
+          "pages_with_nav_landmark": 0,
+          "pages": 5,
+          "nav_share": 0.0,
+          "home_internal_links": 1
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": []
+    },
+    {
+      "id": "F-003",
+      "title": "4 of 4 product-style pages carry no Product structured data",
+      "severity": "high",
+      "evidence": "0 of 4 pages that look like product pages expose Product/Offer structured data. http://demo.example/products (types: none); http://demo.example/products/flow-meter (types: none); http://demo.example/products/logger (types: none); http://demo.example/products/probe (types: none)",
+      "suggested_action": {
+        "summary": "Add Product structured data with name, description, offers and availability.",
+        "priority": "high",
+        "steps": [
+          "Emit a Product node per product page in the initial HTML.",
+          "Include offers.price, offers.priceCurrency and offers.availability.",
+          "Keep the structured values identical to the values shown on the page."
+        ]
+      },
+      "category": "discoverability",
+      "journey_stage": "extract",
+      "check_id": "missing_product_structured_data",
+      "confidence": 0.92,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; consistent across 4/4 pages",
+      "impact": "Product attributes such as name, price and availability have to be guessed from layout rather than read directly, which makes extracted values less reliable.",
+      "priority_score": 0.6366,
+      "priority_reason": "impact 0.80 (severity high) x reach 1.00 x confidence 0.92 x fixability 0.70",
+      "reach": 1.0,
+      "affected_urls": [
+        "http://demo.example/products",
+        "http://demo.example/products/flow-meter",
+        "http://demo.example/products/logger",
+        "http://demo.example/products/probe"
+      ],
+      "technical_details": {
+        "url": "http://demo.example/products",
+        "observation": "0 of 4 pages that look like product pages expose Product/Offer structured data.",
+        "details": "http://demo.example/products (types: none); http://demo.example/products/flow-meter (types: none); http://demo.example/products/logger (types: none); http://demo.example/products/probe (types: none)",
+        "metrics": {
+          "product_pages": 4,
+          "with_product_schema": 0,
+          "without_product_schema": 4
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": []
+    },
+    {
+      "id": "F-004",
+      "title": "2 likely-important page(s) offer no obvious next action",
+      "severity": "high",
+      "evidence": "http://demo.example/ (role: home) contains no call-to-action link or button and only 1 internal link(s); http://demo.example/products (role: products) contains no call-to-action link or button and only 3 internal link(s) Calls to action were detected by matching common action wording on links and buttons (contact, get started, book, request, buy, subscribe and similar). That wording list is English; on a site in another language only the internal-link count is used, with a stricter threshold.",
+      "suggested_action": {
+        "summary": "Add one clear, primary next action to each of these pages.",
+        "priority": "high",
+        "steps": [
+          "Decide the single most useful next step for each page (contact, demo, pricing, signup).",
+          "Add a clearly worded link or button for that step, in text rather than an image.",
+          "Add two or three contextual links to closely related pages."
+        ]
+      },
+      "category": "engagement",
+      "journey_stage": null,
+      "check_id": "no_next_step",
+      "confidence": 0.92,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; consistent across 2/2 pages",
+      "impact": "A visitor who has understood the offering has nowhere to go next, so interest does not convert into contact, signup or a deeper visit.",
+      "priority_score": 0.6366,
+      "priority_reason": "impact 0.80 (severity high) x reach 1.00 x confidence 0.92 x fixability 0.70",
+      "reach": 1.0,
+      "affected_urls": [
+        "http://demo.example/",
+        "http://demo.example/products"
+      ],
+      "technical_details": {
+        "url": "http://demo.example/",
+        "observation": "http://demo.example/ (role: home) contains no call-to-action link or button and only 1 internal link(s); http://demo.example/products (role: products) contains no call-to-action link or button and only 3 internal link(s)",
+        "details": "Calls to action were detected by matching common action wording on links and buttons (contact, get started, book, request, buy, subscribe and similar). That wording list is English; on a site in another language only the internal-link count is used, with a stricter threshold.",
+        "metrics": {
+          "dead_end_pages": 2,
+          "candidate_pages": 2,
+          "primary_lang": "en",
+          "cta_wording_detection_applied": true
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": []
+    },
+    {
+      "id": "F-005",
+      "title": "2 likely-important page(s) contain very little extractable text",
+      "severity": "high",
+      "evidence": "http://demo.example/ (role: home) has 43 words of visible text; http://demo.example/products (role: products) has 48 words of visible text Threshold used: fewer than 80 words. Pages whose text is supplied by JavaScript are excluded here and reported under the rendering check instead, as are contact and legal pages and navigation hubs, which are short by design.",
+      "suggested_action": {
+        "summary": "Express the key information of these pages as readable body text.",
+        "priority": "high",
+        "steps": [
+          "Identify the facts the page is meant to convey.",
+          "Write them into the page body as text rather than as images or downloads.",
+          "Keep headings descriptive so the structure explains the content."
+        ]
+      },
+      "category": "discoverability",
+      "journey_stage": "understand",
+      "check_id": "thin_important_page",
+      "confidence": 0.92,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; consistent across 2/2 pages",
+      "impact": "There is little textual substance for an automated system to summarise or quote, so the page is unlikely to be used as a source even when it is retrieved.",
+      "priority_score": 0.5704,
+      "priority_reason": "impact 0.80 (severity high) x reach 1.00 x confidence 0.92 x fixability 0.50",
+      "reach": 1.0,
+      "affected_urls": [
+        "http://demo.example/",
+        "http://demo.example/products"
+      ],
+      "technical_details": {
+        "url": "http://demo.example/",
+        "observation": "http://demo.example/ (role: home) has 43 words of visible text; http://demo.example/products (role: products) has 48 words of visible text",
+        "details": "Threshold used: fewer than 80 words. Pages whose text is supplied by JavaScript are excluded here and reported under the rendering check instead, as are contact and legal pages and navigation hubs, which are short by design.",
+        "metrics": {
+          "thin_pages": 2,
+          "threshold_words": 80,
+          "word_counts": {
+            "http://demo.example/": 43,
+            "http://demo.example/products": 48
+          }
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": []
+    },
+    {
+      "id": "F-006",
+      "title": "The homepage does not clearly state what the site is or what it offers",
+      "severity": "high",
+      "evidence": "On the homepage, the page title is 'Home', which does not name the brand or what the site is for; there is no H1 heading stating what the site is. First 200 characters of visible homepage text: 'Our team designs and delivers measurement hardware for laboratories. Every instrument is calibrated in house and shipped with a traceable certificate. We support installation, training and annual serv'",
+      "suggested_action": {
+        "summary": "State the offering in the title, the H1 and the opening paragraph of the homepage.",
+        "priority": "medium",
+        "steps": [
+          "Write a title of the form '<Brand> - <what it does for whom>'.",
+          "Make the H1 a plain-language statement of the offering.",
+          "Put a one-sentence summary of the offering in the first visible paragraph.",
+          "Add a meta description repeating that summary."
+        ]
+      },
+      "category": "engagement",
+      "journey_stage": null,
+      "check_id": "home_purpose_unclear",
+      "confidence": 0.82,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; single-page sample; consistent across 1/1 pages",
+      "impact": "A visitor arriving from an AI answer or a search result has to work out what the organization does before deciding to stay, which is the point at which most arrivals are lost.",
+      "priority_score": 0.5379,
+      "priority_reason": "impact 0.80 (severity high) x reach 1.00 x confidence 0.82 x fixability 0.60",
+      "reach": 1.0,
+      "affected_urls": [
+        "http://demo.example/"
+      ],
+      "technical_details": {
+        "url": "http://demo.example/",
+        "observation": "On the homepage, the page title is 'Home', which does not name the brand or what the site is for; there is no H1 heading stating what the site is.",
+        "details": "First 200 characters of visible homepage text: 'Our team designs and delivers measurement hardware for laboratories. Every instrument is calibrated in house and shipped with a traceable certificate. We support installation, training and annual serv'",
+        "metrics": {
+          "title": "Home",
+          "h1_count": 0,
+          "word_count": 43,
+          "meta_description_present": false,
+          "primary_lang": "en",
+          "language_dependent_checks_applied": true
+        }
+      },
+      "possible_benign_explanations": [
+        "A well-known brand may deliberately keep the homepage sparse and carry the explanation in imagery; confirm against the rendered page."
+      ],
+      "merged_from_checks": []
+    },
+    {
+      "id": "F-007",
+      "title": "Substantial page content is absent from the initial HTML and appears only after JavaScript execution",
+      "severity": "high",
+      "evidence": "On http://demo.example/products/flow-meter the initial HTML contains 5 words of visible text while the rendered DOM contains 81 (93% of the visible text is added by JavaScript). http://demo.example/products/flow-meter: raw 5w -> rendered 81w (93% added); http://demo.example/products/logger: raw 5w -> rendered 81w (93% added); http://demo.example/products/probe: raw 5w -> rendered 81w (93% added)",
+      "suggested_action": {
+        "summary": "Serve the primary content of these pages in the initial HTML response (server-side rendering, static generation or hydration of pre-rendered markup).",
+        "priority": "medium",
+        "steps": [
+          "Identify which content blocks are injected client-side on the listed pages.",
+          "Render that content server-side (SSR/SSG) or inline it as pre-rendered markup that hydration replaces.",
+          "Re-test with JavaScript disabled and confirm the key facts appear in the raw HTML.",
+          "Where full SSR is impractical, mirror the key facts in JSON-LD delivered in the initial HTML."
+        ]
+      },
+      "category": "discoverability",
+      "journey_stage": "extract",
+      "check_id": "js_dependent_content",
+      "confidence": 0.93,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages",
+      "impact": "Retrieval clients that do not execute JavaScript see only a fraction of the page, so product, pricing or company facts that live in the rendered DOM may not be extracted at all.",
+      "priority_score": 0.3895,
+      "priority_reason": "impact 0.80 (severity high) x reach 0.60 x confidence 0.93 x fixability 0.35",
+      "reach": 0.6,
+      "affected_urls": [
+        "http://demo.example/products/flow-meter",
+        "http://demo.example/products/logger",
+        "http://demo.example/products/probe"
+      ],
+      "technical_details": {
+        "url": "http://demo.example/products/flow-meter",
+        "observation": "On http://demo.example/products/flow-meter the initial HTML contains 5 words of visible text while the rendered DOM contains 81 (93% of the visible text is added by JavaScript).",
+        "details": "http://demo.example/products/flow-meter: raw 5w -> rendered 81w (93% added); http://demo.example/products/logger: raw 5w -> rendered 81w (93% added); http://demo.example/products/probe: raw 5w -> rendered 81w (93% added)",
+        "metrics": {
+          "js_dependent_pages": 3,
+          "rendered_pages": 5,
+          "max_added_word_ratio": 0.938,
+          "threshold": 0.35,
+          "rendered_only_excerpt": "Flow meter FM-200 Our team designs and delivers measurement hardware for laboratories. Every instrument is calibrated in house and shipped with a traceable certificate. We support installation, training and annual servicing for research groups and industrial q..."
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": []
+    },
+    {
+      "id": "F-008",
+      "title": "2 likely-important page(s) have no H1 heading",
+      "severity": "medium",
+      "evidence": "http://demo.example/ has no <h1> (0 headings of any level); http://demo.example/products has no <h1> (0 headings of any level)",
+      "suggested_action": {
+        "summary": "Give each of these pages one descriptive H1 that names its subject.",
+        "priority": "medium",
+        "steps": [
+          "Add a single <h1> stating what the page is about.",
+          "Keep the heading hierarchy ordered (h1 then h2 then h3).",
+          "Avoid using an image of text as the page heading."
+        ]
+      },
+      "category": "discoverability",
+      "journey_stage": "understand",
+      "check_id": "missing_h1",
+      "confidence": 0.92,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; consistent across 2/2 pages",
+      "impact": "Without a top-level heading the page's subject has to be inferred from the title alone, which weakens topical understanding.",
+      "priority_score": 0.4497,
+      "priority_reason": "impact 0.50 (severity medium) x reach 1.00 x confidence 0.92 x fixability 0.95",
+      "reach": 1.0,
+      "affected_urls": [
+        "http://demo.example/",
+        "http://demo.example/products"
+      ],
+      "technical_details": {
+        "url": "http://demo.example/",
+        "observation": "http://demo.example/ has no <h1> (0 headings of any level); http://demo.example/products has no <h1> (0 headings of any level)",
+        "details": "",
+        "metrics": {
+          "pages_without_h1": 2,
+          "important_pages": 2
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": []
+    },
+    {
+      "id": "F-009",
+      "title": "Potential freshness risk: the most recent dates on the site are several years old",
+      "severity": "medium",
+      "evidence": "5 of 5 dated pages show no date later than 2025; the newest date found anywhere on the crawled pages is 2016. Dates were read from time elements, article metadata and JSON-LD datePublished/dateModified values. An old date does not prove the content is out of date - it only means nothing on the page signals recency.",
+      "suggested_action": {
+        "summary": "Publish explicit last-updated dates and refresh the pages whose facts have changed.",
+        "priority": "medium",
+        "steps": [
+          "Review the listed pages and correct any facts that have changed.",
+          "Add dateModified to the page's structured data when content is revised.",
+          "Show a visible 'last updated' date on pages where recency matters.",
+          "Avoid auto-bumping dates on unchanged pages - that removes the signal's value."
+        ]
+      },
+      "category": "discoverability",
+      "journey_stage": "trust",
+      "check_id": "freshness_risk",
+      "confidence": 0.8,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages; consistent across 5/5 pages; conflicting signals present",
+      "impact": "Without a recent date signal, automated systems have no evidence that the information still holds, so they may prefer more recently dated third-party sources when describing the brand.",
+      "priority_score": 0.328,
+      "priority_reason": "impact 0.50 (severity medium) x reach 1.00 x confidence 0.80 x fixability 0.60",
+      "reach": 1.0,
+      "affected_urls": [
+        "http://demo.example/",
+        "http://demo.example/products",
+        "http://demo.example/products/flow-meter",
+        "http://demo.example/products/logger",
+        "http://demo.example/products/probe"
+      ],
+      "technical_details": {
+        "url": "http://demo.example/",
+        "observation": "5 of 5 dated pages show no date later than 2025; the newest date found anywhere on the crawled pages is 2016.",
+        "details": "Dates were read from time elements, article metadata and JSON-LD datePublished/dateModified values. An old date does not prove the content is out of date - it only means nothing on the page signals recency.",
+        "metrics": {
+          "dated_pages": 5,
+          "pages_at_or_before_cutoff": 5,
+          "cutoff_year": 2025,
+          "newest_year_found": 2016
+        }
+      },
+      "possible_benign_explanations": [
+        "Reference content that has not changed is correctly left undated; an old date is not evidence that the facts are wrong."
+      ],
+      "merged_from_checks": []
+    },
+    {
+      "id": "F-010",
+      "title": "No XML sitemap was found",
+      "severity": "medium",
+      "evidence": "Neither /sitemap.xml nor any Sitemap: directive in robots.txt returned a usable sitemap. 5 HTML pages were reachable by link following.",
+      "suggested_action": {
+        "summary": "Publish an XML sitemap and reference it from robots.txt.",
+        "priority": "medium",
+        "steps": [
+          "Generate a sitemap listing canonical URLs of the public pages.",
+          "Serve it at /sitemap.xml with HTTP 200 and content-type application/xml.",
+          "Add a 'Sitemap: https://<host>/sitemap.xml' line to robots.txt."
+        ]
+      },
+      "category": "discoverability",
+      "journey_stage": "discover",
+      "check_id": "sitemap_missing",
+      "confidence": 0.9,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages",
+      "impact": "Without a sitemap, automated systems must rely entirely on link discovery, so pages that are weakly linked may never be reached.",
+      "priority_score": 0.2901,
+      "priority_reason": "impact 0.50 (severity medium) x reach 0.50 x confidence 0.90 x fixability 0.90",
+      "reach": 0.5,
+      "affected_urls": [
+        "http://demo.example/"
+      ],
+      "technical_details": {
+        "url": "http://demo.example/",
+        "observation": "Neither /sitemap.xml nor any Sitemap: directive in robots.txt returned a usable sitemap.",
+        "details": "5 HTML pages were reachable by link following.",
+        "metrics": {
+          "sitemap_locations_tried": [
+            "/sitemap.xml"
+          ],
+          "html_pages_crawled": 5
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": []
+    },
+    {
+      "id": "F-011",
+      "title": "1 page(s) contain a JSON-LD block that does not parse",
+      "severity": "medium",
+      "evidence": "http://demo.example/: JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 59 (char 58) The block is present in the HTML but is not valid JSON, so a consumer must discard it entirely.",
+      "suggested_action": {
+        "summary": "Fix the JSON syntax so each ld+json block parses, then validate the vocabulary.",
+        "priority": "low",
+        "steps": [
+          "Run each block through a JSON parser and correct the syntax error reported here.",
+          "Escape quotes and remove trailing commas in templated values.",
+          "Validate the corrected block against schema.org expectations for its @type."
+        ]
+      },
+      "category": "discoverability",
+      "journey_stage": "extract",
+      "check_id": "invalid_structured_data",
+      "confidence": 0.9,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages",
+      "impact": "Structured data that fails to parse provides no machine-readable facts at all, so the effort of publishing it is wasted and the page falls back to text interpretation.",
+      "priority_score": 0.2014,
+      "priority_reason": "impact 0.50 (severity medium) x reach 0.20 x confidence 0.90 x fixability 0.85",
+      "reach": 0.2,
+      "affected_urls": [
+        "http://demo.example/"
+      ],
+      "technical_details": {
+        "url": "http://demo.example/",
+        "observation": "http://demo.example/: JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 59 (char 58)",
+        "details": "The block is present in the HTML but is not valid JSON, so a consumer must discard it entirely.",
+        "metrics": {
+          "pages_with_invalid_jsonld": 1,
+          "pages_checked": 5
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": []
+    }
+  ]
+}
