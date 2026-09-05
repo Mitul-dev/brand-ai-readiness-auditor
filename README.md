@@ -249,6 +249,17 @@ The four fields the handout requires on every finding — `id`, `title`,
 `severity`, `evidence`, `suggested_action` — are always present; everything else
 is additive.
 
+## Web Dashboard
+
+The project includes a lightweight local web dashboard for running audits
+through a browser.
+
+Start the dashboard:
+
+```bash
+python app.py
+```
+
 ---
 
 ## How findings are scored
