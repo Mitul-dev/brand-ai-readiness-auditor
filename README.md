@@ -4,16 +4,17 @@ An Agent Skill Marketplace that takes a website URL and returns an
 evidence-backed audit of **AI discoverability** and **on-site engagement**, with
 severity, suggested fixes and priority for every finding.
 
-Built for the **Adobe University Hackathon 2026 — Round 3: "Build the Agent
-Skill Marketplace."**
+Built for the **Adobe University Hackathon 2026 — Agent Skill Marketplace.**
 
 ---
 
 ## What problem this solves
 
-Round 2 asked *why* a brand may be invisible, stale, misrepresented or poorly
-experienced in AI applications. This marketplace answers that question for any
-website it is pointed at, by measuring the site rather than describing it.
+Brands can be invisible, stale, misrepresented or poorly experienced in AI
+applications even when their websites work well for traditional search.
+
+This marketplace evaluates a website directly and provides evidence-backed
+findings across AI discoverability, information quality and on-site engagement.
 
 The product concept is an **AI Website Readiness Auditor**, organised around an
 **AI discoverability journey**:
@@ -399,7 +400,7 @@ that some finding exists.
 
 ---
 
-## Official requirements vs our implementation choices
+## Requirements and implementation choices
 
 ### The check that matters most
 
@@ -413,7 +414,7 @@ groups and reports named agents that are blocked — while acknowledging, in the
 finding itself, that such a block is often a deliberate content-licensing
 decision rather than a defect.
 
-**From the official handout** (source of truth): a single Agent Skill
+**Requirements:** a single Agent Skill
 Marketplace package; `marketplace.json`; one or more Agent Skills; **exactly one**
 entrypoint skill; a valid `SKILL.md` per skill; `README.md` at the root; the
 report schema (`site`, `audited_at`, `summary` with `total_findings`/`critical`/
@@ -435,9 +436,8 @@ dimensions and weights; the importance heuristic and page-role vocabulary; the
 name-normalization rules; the evidence-model schema; the additive report fields;
 the optional HTML viewer.
 
-The handout deliberately does **not** specify a complete checklist — discovering
-mechanism-sound checks is part of the challenge — so the checks above are argued
-for, not asserted as required.
+The requirements do not specify a complete checklist, so the additional checks
+above are implementation choices designed to provide mechanism-sound evidence.
 
 ---
 
