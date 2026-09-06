@@ -6,3 +6,5 @@ __pycache__/
 report.json
 report.html
 evidence.json
+latest_report.html
+latest_report.json
