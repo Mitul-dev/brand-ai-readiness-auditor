@@ -51,6 +51,8 @@ class Finding:
     # and a reader can dismiss the finding on informed grounds.
     benign_explanations: list[str] = field(default_factory=list)
     merged_from: list[str] = field(default_factory=list)
+    reasoning: dict[str, Any] = field(default_factory=dict)
+    enhanced_by_reasoning: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)

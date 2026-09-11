@@ -48,6 +48,7 @@ required ones.
    python skills/discoverability-audit/scripts/analyze_discoverability.py evidence.json -o d.json
    python skills/freshness-corroboration/scripts/analyze_freshness.py evidence.json -o f.json
    python skills/engagement-audit/scripts/analyze_engagement.py evidence.json -o e.json
+   python skills/reasoning/scripts/reason_about_findings.py --evidence evidence.json --findings d.json -o d_reasoned.json
    python skills/audit-orchestrator/scripts/compose_report.py --evidence evidence.json --findings d.json f.json e.json -o report.json
    ```
 4. Validate the marketplace itself with

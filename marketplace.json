@@ -3,7 +3,7 @@
   "name": "brand-ai-readiness-audit",
   "version": "1.0.0",
   "description": "Agent Skill Marketplace that audits any website URL for AI discoverability and on-site engagement problems, and returns an evidence-backed report with severity, suggested fixes and priority.",
-  "author": "Adobe University Hackathon 2026 - Round 3 submission",
+  "author": "Adobe University Hackathon 2026 submission",
   "license": "MIT",
   "entrypoint": "audit-orchestrator",
   "runtime": {
@@ -104,6 +104,23 @@
       ],
       "scripts": [
         "scripts/analyze_engagement.py"
+      ]
+    },
+    {
+      "name": "reasoning",
+      "path": "skills/reasoning",
+      "entrypoint": false,
+      "description": "Interprets and synthesizes deterministic audit evidence and findings. Produces grounded root-cause analysis, explains autonomous AI agent impact, maps cross-finding dependencies, and constructs a prioritized 3-phase strategic remediation roadmap without altering deterministic scores or severities.",
+      "inputs": [
+        "evidence model (JSON)",
+        "findings (JSON)"
+      ],
+      "outputs": [
+        "enriched findings (JSON)",
+        "strategic roadmap (JSON)"
+      ],
+      "scripts": [
+        "scripts/reason_about_findings.py"
       ]
     }
   ]

@@ -37,19 +37,22 @@ Impact:   Clients that do not execute JavaScript see a fraction of the page, so
 
 ---
 
-## Design principle
+## Design principle: The 5-Stage Architecture
 
 ```
 DETERMINISTIC DATA COLLECTION → OBJECTIVE EVIDENCE → AGENT REASONING
         → FINDING → RECOMMENDATION
 ```
 
-Code measures; the agent explains. Severity, confidence, reach and priority are
-computed by deterministic functions from measured inputs — no language model
-picks those numbers. The agent layer interprets, contextualises and presents.
+Code measures; the agent explains. Severity, confidence, reach, priority and the AI Readiness Score are computed by deterministic functions from measured inputs — no language model picks those numbers. The agent layer interprets, contextualises and synthesizes actionable recommendations:
 
-The anti-pattern this deliberately avoids is `page → LLM → "what's wrong?"`,
-which produces confident, unverifiable, site-specific guesses.
+1. **Deterministic Data Collection**: Safe, bounded, read-only crawling and DOM rendering (`crawl-render-audit`).
+2. **Objective Evidence**: The evidence engine (`aira/evidence.py`) records purely measurable facts (status codes, word counts, raw-to-rendered word ratios, schema graph nodes, crawl hop depths, and corroboration URLs).
+3. **Agent Reasoning**: The reasoning layer (`skills/reasoning/` and `aira/reasoning/`) analyzes patterns across findings to diagnose mechanical root causes, articulate autonomous AI agent impacts, and assemble a 3-phase strategic remediation plan. Zero API keys required out of the box via `DeterministicReasoningProvider`, with optional lightweight `LLMReasoningProvider` support via `httpx`.
+4. **Findings**: Grounded findings containing measured observations, severity, reach, confidence, and strict evidence grounding.
+5. **Recommendations**: Concrete, prioritized engineering actions and an executive remediation roadmap.
+
+The anti-pattern this deliberately avoids is `page → LLM → "what's wrong?"`, which produces confident, unverifiable, site-specific hallucinations.
 
 ---
 
@@ -61,13 +64,14 @@ which produces confident, unverifiable, site-specific guesses.
                   └───────────┬─────────────┘
                               ▼
                   ┌─────────────────────────┐
-                  │ crawl-render-audit      │  safe bounded crawl + rendering
+                  │ 1. DATA COLLECTION      │  safe bounded crawl + rendering
+                  │    crawl-render-audit   │
                   └───────────┬─────────────┘
                               ▼
                   ┌─────────────────────────┐
-                  │ EVIDENCE ENGINE         │  compact, measured, JSON
-                  │ pages · links · schema  │
-                  │ rendering · facts       │
+                  │ 2. OBJECTIVE EVIDENCE   │  compact, measured, JSON
+                  │    pages · links · DOM  │
+                  │    facts · render ratio │
                   └───────────┬─────────────┘
              ┌────────────────┼────────────────┐
              ▼                ▼                ▼
@@ -76,12 +80,19 @@ which produces confident, unverifiable, site-specific guesses.
              └────────────────┼────────────────┘
                               ▼
                   ┌─────────────────────────┐
-                  │ FINDING ENGINE          │  dedupe · severity · confidence
-                  │                         │  reach · priority
+                  │ 3. AGENT REASONING      │  skills/reasoning
+                  │    root causes · impact │  cross-finding synthesis
+                  │    phased roadmap       │
                   └───────────┬─────────────┘
                               ▼
                   ┌─────────────────────────┐
-                  │ FINAL REPORT (validated)│  score · findings · fixes
+                  │ 4. FINDINGS             │  dedupe · severity · confidence
+                  │                         │  reach · priority · grounded
+                  └───────────┬─────────────┘
+                              ▼
+                  ┌─────────────────────────┐
+                  │ 5. RECOMMENDATIONS      │  final report · actionable fixes
+                  │    AI Readiness Score   │  phased implementation roadmap
                   └─────────────────────────┘
 ```
 
@@ -89,14 +100,15 @@ which produces confident, unverifiable, site-specific guesses.
 
 | Skill | Entrypoint | Responsibility |
 |---|---|---|
-| `audit-orchestrator` | **yes** | Validates the URL, runs the pipeline, normalizes and deduplicates findings, computes priority and the readiness score, validates the report schema. |
+| `audit-orchestrator` | **yes** | Validates the URL, runs the pipeline, normalizes and deduplicates findings, computes priority and the readiness score, coordinates reasoning, validates the report schema. |
 | `crawl-render-audit` | no | Safe read-only crawl and the evidence engine. Measures only; never judges. |
 | `discoverability-audit` | no | Discover / access / understand / extract / represent checks. |
 | `freshness-corroboration` | no | Entity naming consistency, contact-fact consistency, freshness risk. |
 | `engagement-audit` | no | Orientation, page identity, navigation, next step, context retention. |
+| `reasoning` | no | Grounded root-cause analysis, autonomous AI agent impact, cross-finding synthesis, and phased strategic remediation roadmap. |
 
 The split is functional, not cosmetic: the crawl skill is the only one that
-touches the network, and the three analysis skills are pure functions over an
+touches the network, and the analysis and reasoning skills are pure functions over an
 evidence file, so any of them can be run, tested or replaced independently.
 
 ### Check inventory
@@ -332,9 +344,11 @@ the one place where reasoning, not code, makes the call.
 ## Testing
 
 ```bash
-pytest -q                       # 99 tests
+pytest -q                       # 106 tests
 python tests/fixtures/build_fixtures.py   # regenerate the fixture sites
 ```
+
+The test suite includes `tests/test_reasoning.py` verifying evidence grounding, zero-key deterministic fallback, invariance guardrails, and report contract schema conformance.
 
 Sixteen controlled fixture sites are served from a local HTTP server, each with a
 known defect and a known expected finding:

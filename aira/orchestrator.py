@@ -16,6 +16,7 @@ from .config import AuditConfig
 from .crawler import crawl_site
 from .evidence import SiteEvidence, build_evidence
 from .findings import Finding, dedupe, finalize
+from .reasoning import ReasoningEngine
 from .report import assert_valid, build_report, validate_report
 from .scoring import compute_score
 from .urls import UnsafeUrlError, validate_target
@@ -72,9 +73,20 @@ def run_audit(url: str, config: AuditConfig | None = None, *,
     merged = dedupe(raw_findings)
     findings = finalize(merged)
     score = compute_score(findings, evidence)
+
+    # --- Agent Reasoning Stage ---
+    # DETERMINISTIC DATA COLLECTION -> OBJECTIVE EVIDENCE -> AGENT REASONING -> FINDING -> RECOMMENDATION
+    strategic_reasoning = None
+    try:
+        engine = ReasoningEngine()
+        findings, strategic_reasoning = engine.process(evidence, findings)
+    except Exception:
+        log.exception("Reasoning stage encountered error; continuing with base findings")
+
     runtime = time.perf_counter() - started
     report = build_report(evidence, findings, score, runtime_s=runtime,
-                          include_evidence_model=include_evidence_model)
+                          include_evidence_model=include_evidence_model,
+                          strategic_reasoning=strategic_reasoning)
     assert_valid(report)
     return report
 
@@ -95,8 +107,17 @@ def run_audit_with_evidence(url: str, config: AuditConfig | None = None
         raw.extend(produced)
     findings = finalize(dedupe(raw))
     score = compute_score(findings, evidence)
+
+    strategic_reasoning = None
+    try:
+        engine = ReasoningEngine()
+        findings, strategic_reasoning = engine.process(evidence, findings)
+    except Exception:
+        log.exception("Reasoning stage encountered error; continuing with base findings")
+
     report = build_report(evidence, findings, score,
-                          runtime_s=time.perf_counter() - started)
+                          runtime_s=time.perf_counter() - started,
+                          strategic_reasoning=strategic_reasoning)
     problems = validate_report(report)
     if problems:
         raise AuditError("; ".join(problems))

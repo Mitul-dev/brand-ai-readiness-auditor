@@ -19,17 +19,20 @@ bootstrap()
 
 from aira.evidence import SiteEvidence  # noqa: E402
 from aira.findings import Evidence, Finding, dedupe, finalize  # noqa: E402
+from aira.reasoning import ReasoningEngine  # noqa: E402
 from aira.report import build_report, validate_report  # noqa: E402
 from aira.scoring import compute_score  # noqa: E402
 
 
 def load_findings(paths: list[str]) -> list[Finding]:
     out: list[Finding] = []
+    field_names = set(Finding.__dataclass_fields__.keys())
     for path in paths:
         for item in json.loads(open(path, encoding="utf-8").read()):
             item = dict(item)
             item["evidence"] = Evidence(**item["evidence"])
-            out.append(Finding(**item))
+            filtered = {k: v for k, v in item.items() if k in field_names}
+            out.append(Finding(**filtered))
     return out
 
 
@@ -44,7 +47,15 @@ def main(argv: list[str] | None = None) -> int:
         json.loads(open(args.evidence, encoding="utf-8").read()))
     findings = finalize(dedupe(load_findings(args.findings)))
     score = compute_score(findings, evidence)
-    report = build_report(evidence, findings, score)
+
+    strategic_reasoning = None
+    try:
+        engine = ReasoningEngine()
+        findings, strategic_reasoning = engine.process(evidence, findings)
+    except Exception as exc:
+        print(f"warning: reasoning stage skipped ({exc})", file=sys.stderr)
+
+    report = build_report(evidence, findings, score, strategic_reasoning=strategic_reasoning)
     problems = validate_report(report)
     if problems:
         print("report failed schema validation: " + "; ".join(problems),

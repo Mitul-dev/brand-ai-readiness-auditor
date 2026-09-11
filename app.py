@@ -876,6 +876,103 @@ input {
 
 
 /* =========================
+   AGENT REASONING & ROADMAP
+========================= */
+
+.reasoning-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+}
+
+.reasoning-card {
+    padding: 24px;
+}
+
+.reasoning-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 18px;
+}
+
+.bottleneck-badge {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    text-align: right;
+    min-width: 140px;
+}
+
+.strategic-themes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+}
+
+.theme-card {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+}
+
+.roadmap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+}
+
+.phase-card {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 14px;
+}
+
+.phase-title {
+    font-weight: 750;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.phase-obj {
+    color: var(--muted);
+    font-size: 11px;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.phase-actions {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.reasoning-tag {
+    display: inline-block;
+    padding: 3px 8px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--muted);
+}
+
+
+/* =========================
    ACTIONS
 ========================= */
 
@@ -1354,6 +1451,73 @@ input {
 
 
 <!-- =========================
+     STRATEGIC REASONING & ROADMAP
+========================= -->
+{% if report.get("strategic_reasoning") %}
+{% set sr = report["strategic_reasoning"] %}
+
+<h2 class="section-title">
+    Agent Reasoning & Strategic Roadmap
+</h2>
+
+<div class="card reasoning-card">
+
+    <div class="reasoning-header">
+        <div style="flex: 1; min-width: 280px;">
+            <span class="reasoning-badge">Agent Synthesized</span>
+            <h3 style="margin: 9px 0 6px; font-size: 17px;">Architectural Synthesis</h3>
+            <p style="margin: 0; line-height: 1.6; font-size: 14px; color: var(--text);">
+                {{ sr["executive_summary"] }}
+            </p>
+        </div>
+
+        <div class="bottleneck-badge">
+            <div style="font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: 700;">Primary Bottleneck</div>
+            <div style="font-size: 16px; font-weight: 800; text-transform: uppercase; color: var(--accent); margin-top: 3px;">
+                {{ sr["primary_bottleneck_stage"] }}
+            </div>
+        </div>
+    </div>
+
+    {% if sr.get("strategic_themes") %}
+    <h4 style="margin: 22px 0 11px; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em;">Strategic Themes</h4>
+    <div class="strategic-themes-grid">
+        {% for theme in sr["strategic_themes"] %}
+        <div class="theme-card">
+            <b style="font-size: 13px; color: var(--text);">{{ theme["theme"] }}</b>
+            <p style="margin: 5px 0 9px; font-size: 12px; color: var(--muted); line-height: 1.45;">{{ theme["diagnosis"] }}</p>
+            <div style="font-size: 12px; border-left: 2px solid var(--accent); padding-left: 8px; line-height: 1.45;">
+                <b style="color: var(--accent);">Fix:</b> {{ theme["strategic_recommendation"] }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if sr.get("remediation_roadmap") %}
+    <h4 style="margin: 24px 0 11px; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em;">Phased Remediation Roadmap</h4>
+    <div class="roadmap-grid">
+        {% for phase in sr["remediation_roadmap"] %}
+        <div class="phase-card">
+            <div class="phase-title">{{ phase["phase"] }}</div>
+            <div class="phase-obj">{{ phase["objective"] }}</div>
+            <ul class="phase-actions">
+                {% for action in phase["actions"] %}
+                <li>{{ action }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+
+
+<!-- =========================
      FINDINGS
 ========================= -->
 
@@ -1480,6 +1644,10 @@ input {
                 · Confidence:
                 {{ f["confidence"] }}
 
+                {% if f.get("enhanced_by_reasoning") %}
+                · <span class="reasoning-badge">Agent Reasoned</span>
+                {% endif %}
+
             </div>
 
 
@@ -1506,6 +1674,18 @@ input {
     </p>
 
 
+    {% if f.get("reasoning") and f["reasoning"].get("root_cause_analysis") %}
+
+    <h4>
+        Grounded Root Cause
+    </h4>
+
+    <p>
+        {{ f["reasoning"]["root_cause_analysis"] }}
+    </p>
+
+    {% endif %}
+
 
     <h4>
         Why it matters
@@ -1516,6 +1696,28 @@ input {
         {{ f["impact"] }}
     </p>
 
+
+    {% if f.get("reasoning") and f["reasoning"].get("ai_agent_impact") %}
+
+    <h4>
+        Autonomous AI Agent Impact
+    </h4>
+
+    <p>
+        {{ f["reasoning"]["ai_agent_impact"] }}
+    </p>
+
+    {% endif %}
+
+
+    {% if f.get("reasoning") and f["reasoning"].get("remediation_phase") %}
+
+    <div style="margin: 12px 0; display: flex; gap: 8px; flex-wrap: wrap;">
+        <span class="reasoning-tag">{{ f["reasoning"]["remediation_phase"] }}</span>
+        <span class="reasoning-tag">Effort: {{ f["reasoning"]["estimated_effort"]|upper }}</span>
+    </div>
+
+    {% endif %}
 
 
     <h4>

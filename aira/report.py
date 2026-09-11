@@ -31,7 +31,8 @@ def _evidence_sentence(f: Finding) -> str:
 
 def build_report(ev: SiteEvidence, findings: list[Finding],
                  score: ScoreBreakdown, *, runtime_s: float = 0.0,
-                 include_evidence_model: bool = False) -> dict[str, Any]:
+                 include_evidence_model: bool = False,
+                 strategic_reasoning: dict[str, Any] | None = None) -> dict[str, Any]:
     counts = {s: sum(1 for f in findings if f.severity == s) for s in VALID_SEVERITIES}
     report: dict[str, Any] = {
         "site": ev.site,
@@ -94,7 +95,11 @@ def build_report(ev: SiteEvidence, findings: list[Finding],
             },
             "possible_benign_explanations": f.benign_explanations,
             "merged_from_checks": f.merged_from,
+            "reasoning": f.reasoning,
+            "enhanced_by_reasoning": f.enhanced_by_reasoning,
         })
+    if strategic_reasoning:
+        report["strategic_reasoning"] = strategic_reasoning
     if include_evidence_model:
         report["evidence_model"] = ev.to_dict()
     return report
