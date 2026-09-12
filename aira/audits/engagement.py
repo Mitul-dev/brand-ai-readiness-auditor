@@ -12,6 +12,7 @@ import re
 from ..config import AuditConfig
 from ..evidence import PageEvidence, SiteEvidence
 from ..findings import Finding
+from ..navigation import ABSENT as NAV_ABSENT, PROBABLE as NAV_PROBABLE, STRONG as NAV_STRONG
 from .base import make_finding
 
 OFFER_WORDS = re.compile(
@@ -142,39 +143,104 @@ def _clarity(ev: SiteEvidence, cfg: AuditConfig) -> list[Finding]:
 
 
 def _navigation(ev: SiteEvidence, cfg: AuditConfig) -> list[Finding]:
+    """Report navigation on behaviour, and markup quality separately.
+
+    "No <nav> element" and "no navigation" are different claims. Only the second
+    is a visitor-facing problem, so only the second can reach medium or high
+    severity; a functional menu that lacks semantic landmarks is a low-severity
+    machine-readability observation.
+    """
+    nav = ev.navigation or {}
     pages = ev.html_pages
-    if len(pages) < 4:
+    if not nav or len(pages) < 4:
         return []
-    with_nav = [p for p in pages if p.has_nav_landmark]
-    nav_share = len(with_nav) / len(pages)
-    home = ev.home
-    home_nav_links = home.outgoing_internal_links if home else 0
-    if nav_share >= 0.6 or (home and home_nav_links >= 5 and home.has_nav_landmark):
-        return []
+
+    strength = nav.get("strength", NAV_ABSENT)
+    metrics = {k: v for k, v in nav.items() if k != "repeated_links"}
+    metrics["repeated_link_examples"] = nav.get("repeated_links", [])[:8]
+    source_note = (
+        "Measured from the rendered DOM." if nav.get("evidence_source") == "rendered_dom"
+        else "Measured from the server-rendered HTML; rendering evidence was not "
+             "available for this run, so client-side navigation would not be seen.")
+
+    # Navigation works, but carries no semantic landmark. Implementation quality,
+    # not a visitor problem.
+    if strength in (NAV_STRONG, NAV_PROBABLE):
+        if nav.get("semantic_landmark_share", 0.0) >= 0.5:
+            return []
+        return [make_finding(
+            check_id="missing_nav_landmark", category="engagement",
+            journey_stage=None, dimension="engagement",
+            title="Navigation appears functional, but no semantic navigation landmark was detected",
+            url=(ev.home.url if ev.home else ev.target_url),
+            observation=(
+                "Navigation was detected behaviourally: "
+                + "; ".join(nav.get("signals") or ["repeated internal links across pages"])
+                + f". However only {nav.get('pages_with_nav_landmark', 0)} of "
+                f"{nav.get('pages_considered', len(pages))} pages wrap it in a <nav> "
+                "element or role=\"navigation\"."),
+            details=("Visitors can navigate this site; this finding is about how "
+                     "reliably an automated reader can identify the navigation "
+                     "region. " + source_note),
+            metrics=metrics,
+            impact=("Assistive technology and automated readers use the navigation "
+                    "landmark to separate site chrome from page content. Without it "
+                    "they must infer the boundary, which is less reliable, though the "
+                    "navigation itself works."),
+            action_summary="Wrap the existing primary navigation in a <nav> element.",
+            steps=["Wrap the existing header or footer menu in <nav> - no visual or "
+                   "behavioural change is required.",
+                   "Give a second navigation region an aria-label so the two are distinguishable.",
+                   "Keep the links in the server-rendered HTML."],
+            benign_explanations=[
+                "Navigation is already working for visitors; this is a markup "
+                "improvement, not a functional defect.",
+            ],
+            severity_override="low",
+            reach=1.0 - nav.get("semantic_landmark_share", 0.0),
+            on_important_page=False,
+            sample_size=nav.get("pages_considered", len(pages)),
+            affected=max(nav.get("pages_considered", len(pages))
+                         - nav.get("pages_with_nav_landmark", 0), 1),
+        )]
+
+    # Navigation is weak or absent: a real visitor-facing problem.
+    absent = strength == NAV_ABSENT
     return [make_finding(
         check_id="weak_navigation", category="engagement",
         journey_stage=None, dimension="engagement",
-        title="Most crawled pages expose no navigation region",
-        url=(home.url if home else ev.target_url),
+        title=("No site-wide navigation could be detected" if absent
+               else "Site-wide navigation is inconsistent or very limited"),
+        url=(ev.home.url if ev.home else ev.target_url),
         observation=(
-            f"{len(with_nav)} of {len(pages)} crawled HTML pages contain a <nav> "
-            f"element or role=\"navigation\"; the homepage exposes "
-            f"{home_nav_links} internal links in total."),
-        details=("Navigation was detected structurally (nav landmark plus internal "
-                 "links inside it), so a visually styled menu that uses neither will "
-                 "also be reported here."),
-        metrics={"pages_with_nav_landmark": len(with_nav), "pages": len(pages),
-                 "nav_share": round(nav_share, 2),
-                 "home_internal_links": home_nav_links},
-        impact=("Without a consistent navigation region, a visitor who lands on an "
-                "interior page has no reliable way to move to the rest of the site, "
-                "so the visit usually ends on the landing page."),
-        action_summary="Provide a consistent primary navigation region on every page, marked up as a nav landmark.",
-        steps=["Wrap the primary menu in a <nav> element present on every template.",
-               "Include links to the main sections (offering, pricing, about, contact).",
-               "Make sure the links exist in the server-rendered HTML, not only after client-side hydration."],
-        reach=1.0 - nav_share, on_important_page=True,
-        sample_size=len(pages), affected=len(pages) - len(with_nav),
+            f"Across {nav.get('pages_considered', len(pages))} crawled pages: "
+            f"{nav.get('pages_with_nav_landmark', 0)} carry a nav landmark, "
+            f"{nav.get('pages_with_header_links', 0)} have a header link cluster, "
+            f"{nav.get('pages_with_footer_links', 0)} have a footer link cluster, and "
+            f"{nav.get('repeated_link_count', 0)} internal links repeat across most "
+            f"pages. The homepage exposes {nav.get('home_internal_links', 0)} internal "
+            f"links; the median page exposes {nav.get('median_internal_links', 0)}."),
+        details=("Navigation was tested by several independent signals - landmarks, "
+                 "header and footer link clusters, and internal links repeated across "
+                 "pages - so a menu built without semantic markup would still have "
+                 "been detected. " + source_note),
+        metrics=metrics,
+        impact=("A visitor who lands on an interior page has no consistent route to "
+                "the rest of the site, so the visit tends to end on the landing page."),
+        action_summary="Provide a consistent set of primary navigation links on every page.",
+        steps=["Add a primary menu to every page template linking the main sections.",
+               "Keep the same links in the same place across pages so the route is predictable.",
+               "Wrap the menu in a <nav> element so automated readers can identify it.",
+               "Make sure the links are present in the server-rendered HTML."],
+        benign_explanations=[
+            "A deliberate single-page or campaign site may have no site-wide "
+            "navigation by design.",
+        ] if not absent else [],
+        severity_override=None if absent else "medium",
+        reach=1.0 if absent else 0.5,
+        on_important_page=absent,
+        sample_size=nav.get("pages_considered", len(pages)),
+        affected=nav.get("pages_considered", len(pages)),
     )]
 
 

@@ -42,7 +42,10 @@ SEVERITY_PENALTY = {"critical": 45.0, "high": 26.0, "medium": 13.0, "low": 5.0}
 
 @dataclass(slots=True)
 class ScoreBreakdown:
-    overall: int
+    # ``None`` means "not assessed": no dimension could be judged from the
+    # evidence collected. Reporting 0 there would read as "catastrophically bad"
+    # when the truth is "we did not measure anything".
+    overall: int | None
     dimensions: dict[str, int | None]
     explanation: dict[str, str] = field(default_factory=dict)
     applicable: dict[str, bool] = field(default_factory=dict)
@@ -50,6 +53,7 @@ class ScoreBreakdown:
     def to_dict(self) -> dict[str, Any]:
         return {
             "overall": self.overall,
+            "assessed": self.overall is not None,
             "dimensions": {DIMENSION_LABELS[k]: v for k, v in self.dimensions.items()},
             "dimension_keys": self.dimensions,
             "explanation": self.explanation,
@@ -115,6 +119,6 @@ def compute_score(findings: list[Finding], ev: SiteEvidence) -> ScoreBreakdown:
         overall = int(round(
             sum(DIMENSION_WEIGHTS[d] * v for d, v in live.items()) / total_w))
     else:
-        overall = 0
+        overall = None
     return ScoreBreakdown(overall=overall, dimensions=dims,
                           explanation=explanation, applicable=applicable)

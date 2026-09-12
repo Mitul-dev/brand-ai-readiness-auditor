@@ -32,10 +32,10 @@ pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:
 .empty{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:24px;text-align:center;color:var(--mut)}
 </style></head><body><div class="wrap">
 <h1>AI Readiness Report - 127.0.0.1</h1>
-<div class="sub">Audited 2026-09-05T05:48:29+00:00 &middot;
+<div class="sub">Audited 2026-09-12T09:04:08+00:00 &middot;
 5 pages crawled &middot;
 5 rendered &middot;
-3.71s</div>
+3.46s</div>
 <div class="score"><div><div class="big">64</div>
 <div class="sub" style="margin:0">of 100</div></div>
 <div class="dims"><div class="dim">Discoverability <b>80</b><div class="bar"><i style="width:80%"></i></div></div><div class="dim">Content Accessibility <b>58</b><div class="bar"><i style="width:58%"></i></div></div><div class="dim">Entity Clarity <b>45</b><div class="bar"><i style="width:45%"></i></div></div><div class="dim">Fact Consistency <b>100</b><div class="bar"><i style="width:100%"></i></div></div><div class="dim">Freshness <b>90</b><div class="bar"><i style="width:90%"></i></div></div><div class="dim">Engagement <b>29</b><div class="bar"><i style="width:29%"></i></div></div></div></div>
@@ -70,25 +70,36 @@ pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:
 <details>
   <summary>
     <span class="sev" style="background:#c2410c">high</span>
-    <span><span class="ttl">Most crawled pages expose no navigation region</span>
+    <span><span class="ttl">No site-wide navigation could be detected</span>
       <div class="meta">F-002 &middot; engagement
       
       &middot; priority high
       &middot; confidence 0.98</div></span>
   </summary>
   <div class="body">
-    <h4>Problem</h4><p>Most crawled pages expose no navigation region</p>
-    <h4>Evidence</h4><p>0 of 5 crawled HTML pages contain a &lt;nav&gt; element or role=&quot;navigation&quot;; the homepage exposes 1 internal links in total.</p>
-    <p class="meta">Navigation was detected structurally (nav landmark plus internal links inside it), so a visually styled menu that uses neither will also be reported here.</p>
+    <h4>Problem</h4><p>No site-wide navigation could be detected</p>
+    <h4>Evidence</h4><p>Across 5 crawled pages: 0 carry a nav landmark, 0 have a header link cluster, 0 have a footer link cluster, and 0 internal links repeat across most pages. The homepage exposes 1 internal links; the median page exposes 0.</p>
+    <p class="meta">Navigation was tested by several independent signals - landmarks, header and footer link clusters, and internal links repeated across pages - so a menu built without semantic markup would still have been detected. Measured from the rendered DOM.</p>
     <h4>Metrics</h4><pre>{
+  &quot;strength&quot;: &quot;absent&quot;,
+  &quot;pages_considered&quot;: 5,
   &quot;pages_with_nav_landmark&quot;: 0,
-  &quot;pages&quot;: 5,
-  &quot;nav_share&quot;: 0.0,
-  &quot;home_internal_links&quot;: 1
+  &quot;pages_with_header_landmark&quot;: 0,
+  &quot;pages_with_footer_landmark&quot;: 5,
+  &quot;pages_with_header_links&quot;: 0,
+  &quot;pages_with_footer_links&quot;: 0,
+  &quot;repeated_link_count&quot;: 0,
+  &quot;repeated_link_share&quot;: 0.0,
+  &quot;home_internal_links&quot;: 1,
+  &quot;median_internal_links&quot;: 0,
+  &quot;semantic_landmark_share&quot;: 0.0,
+  &quot;signals&quot;: [],
+  &quot;evidence_source&quot;: &quot;rendered_dom&quot;,
+  &quot;repeated_link_examples&quot;: []
 }</pre>
-    <h4>Why it matters</h4><p>Without a consistent navigation region, a visitor who lands on an interior page has no reliable way to move to the rest of the site, so the visit usually ends on the landing page.</p>
-    <h4>Recommended fix</h4><p>Provide a consistent primary navigation region on every page, marked up as a nav landmark.</p>
-    <ol><li>Wrap the primary menu in a &lt;nav&gt; element present on every template.</li><li>Include links to the main sections (offering, pricing, about, contact).</li><li>Make sure the links exist in the server-rendered HTML, not only after client-side hydration.</li></ol>
+    <h4>Why it matters</h4><p>A visitor who lands on an interior page has no consistent route to the rest of the site, so the visit tends to end on the landing page.</p>
+    <h4>Recommended fix</h4><p>Provide a consistent set of primary navigation links on every page.</p>
+    <ol><li>Add a primary menu to every page template linking the main sections.</li><li>Keep the same links in the same place across pages so the route is predictable.</li><li>Wrap the menu in a &lt;nav&gt; element so automated readers can identify it.</li><li>Make sure the links are present in the server-rendered HTML.</li></ol>
     <h4>Priority &amp; confidence</h4>
     <p class="meta">impact 0.80 (severity high) x reach 1.00 x confidence 0.98 x fixability 0.60<br>deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages; consistent across 5/5 pages</p>
     <h4>Affected URLs</h4><p class="urls">http://demo.example/</p>

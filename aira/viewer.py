@@ -106,8 +106,10 @@ def render_html(report: dict[str, Any]) -> str:
 {_esc(s.get('pages_crawled'))} pages crawled &middot;
 {_esc(s.get('pages_rendered'))} rendered &middot;
 {_esc(s.get('runtime_seconds'))}s</div>
-<div class="score"><div><div class="big">{_esc(ai.get('overall'))}</div>
-<div class="sub" style="margin:0">of 100</div></div>
+<div class="score"><div><div class="big">{
+    "n/a" if ai.get("overall") is None else _esc(ai.get("overall"))}</div>
+<div class="sub" style="margin:0">{
+    "not assessed" if ai.get("overall") is None else "of 100"}</div></div>
 <div class="dims">{''.join(dims)}</div></div>
 <div class="counts"><span class="pill"><b>{_esc(s.get('total_findings'))}</b> findings</span>{counts}</div>
 {body}

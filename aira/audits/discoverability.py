@@ -76,6 +76,130 @@ def _discover_stage(ev: SiteEvidence, cfg: AuditConfig) -> list[Finding]:
         ))
         return out
 
+    # --- how did the homepage request actually end? -----------------------
+    # A safety refusal, a redirect misconfiguration and a dead server are three
+    # different facts. Only the last of them means the site is unreachable.
+    if ev.home_outcome == "external_redirect":
+        target = ev.home_redirect_target or "another domain"
+        out.append(make_finding(
+            check_id="homepage_redirects_offsite", category="discoverability",
+            journey_stage="discover", dimension="discoverability",
+            title="The homepage redirects to a different domain",
+            url=ev.target_url,
+            observation=(
+                f"{ev.target_url} answered with HTTP {ev.home_status} and a Location "
+                f"of {target}. The origin server responded normally; this audit does "
+                "not follow redirects across registrable domains, so the destination "
+                "was not crawled."),
+            details=("Redirect chain observed: "
+                     + " -> ".join(ev.home_redirect_chain + [target])
+                     + ". This is the normal shape of a country, locale or brand "
+                     "consolidation redirect and is not by itself a defect."),
+            metrics={"home_status": ev.home_status,
+                     "redirect_target": target,
+                     "redirect_count": len(ev.home_redirect_chain),
+                     "origin_responded": True,
+                     "destination_crawled": False},
+            impact=("Nothing here indicates the site is unavailable. It does mean the "
+                    "audited hostname is not where the content lives, so this run "
+                    "carries no evidence about the destination."),
+            action_summary=f"Re-run the audit directly against {target} to audit the content.",
+            steps=[
+                f"Run the audit again with {target} as the target to assess the actual content.",
+                "If the destination is a locale variant, audit the locale a given audience is served.",
+                "Confirm the redirect is a 301 when the move is permanent, so the destination accumulates the authority.",
+            ],
+            benign_explanations=[
+                "Country, locale and brand-consolidation redirects are normal and "
+                "intentional; this finding records what happened, it does not assert "
+                "a defect.",
+                "The audit's own same-site policy, not the site, is the reason the "
+                "destination was not crawled.",
+            ],
+            severity_override="low",
+            reach=1.0, on_important_page=True, sample_size=1, affected=1,
+        ))
+        return out
+
+    if ev.home_outcome in ("redirect_loop", "redirect_limit", "bad_location"):
+        label = {"redirect_loop": "a redirect loop",
+                 "redirect_limit": "more redirect hops than the limit allows",
+                 "bad_location": "a redirect with an unusable Location header"}[
+                     ev.home_outcome]
+        out.append(make_finding(
+            check_id="redirect_configuration_error", category="discoverability",
+            journey_stage="discover", dimension="discoverability",
+            title=f"The homepage request ended in {label}",
+            url=ev.target_url,
+            observation=(f"Requesting {ev.target_url} produced {label}. "
+                         f"{ev.home_error or ''}").strip(),
+            details=("Redirect chain observed: "
+                     + (" -> ".join(ev.home_redirect_chain) or "none recorded")),
+            metrics={"home_status": ev.home_status,
+                     "redirect_count": len(ev.home_redirect_chain),
+                     "outcome": ev.home_outcome,
+                     "chain": ev.home_redirect_chain[:10]},
+            impact=("No client can resolve the homepage to a final document, so the "
+                    "entry point to the site cannot be retrieved by anything that "
+                    "follows redirects the standard way."),
+            action_summary="Fix the redirect rule so the homepage resolves to one final URL.",
+            steps=["Trace the redirect chain with a client that does not follow redirects and inspect each Location header.",
+                   "Remove the rule that sends the chain back on itself or lengthens it.",
+                   "Make the homepage resolve in at most one hop."],
+            reach=1.0, on_important_page=True, sample_size=1, affected=1,
+        ))
+        return out
+
+    if ev.home_outcome == "private_redirect":
+        out.append(make_finding(
+            check_id="redirect_to_private_address", category="discoverability",
+            journey_stage="discover", dimension="discoverability",
+            title="The homepage redirects to a non-public network address",
+            url=ev.target_url,
+            observation=(
+                f"{ev.target_url} answered with HTTP {ev.home_status} and a Location "
+                f"of {ev.home_redirect_target}, which resolves to a private, loopback "
+                "or otherwise non-public address. The redirect was not followed."),
+            details="Refused by the address guard before any request was made to the target.",
+            metrics={"home_status": ev.home_status,
+                     "redirect_target": ev.home_redirect_target},
+            impact=("A public URL that points at an internal address is unreachable "
+                    "for any external client and is usually a misconfigured "
+                    "environment or a leaked internal hostname."),
+            action_summary="Point the redirect at the public hostname that should serve this content.",
+            steps=["Check for an environment-specific redirect rule that leaked into production.",
+                   "Replace the internal hostname with the public one.",
+                   "Verify from outside your network that the homepage resolves."],
+            reach=1.0, on_important_page=True, sample_size=1, affected=1,
+        ))
+        return out
+
+    if ev.home_outcome == "robots_blocked":
+        # The homepage itself is disallowed without a site-wide block. The server
+        # is fine; we are the ones not fetching it.
+        out.append(make_finding(
+            check_id="important_page_robots_blocked", category="discoverability",
+            journey_stage="discover", dimension="discoverability",
+            title="robots.txt disallows the homepage",
+            url=ev.target_url,
+            observation=(f"robots.txt disallows {ev.target_url} for this crawler, so "
+                         "the homepage was not fetched. The server itself was not "
+                         "reported as failing."),
+            details=("Disallowed path prefixes observed: "
+                     + (", ".join(ev.robots_blocked_paths[:8]) or "not recorded")),
+            metrics={"home_status": ev.home_status,
+                     "robots_blocked_paths": ev.robots_blocked_paths[:8]},
+            impact=("Compliant automated systems will not retrieve the site's entry "
+                    "point, so the brand's own description of itself is unavailable "
+                    "to them."),
+            action_summary="Allow the homepage in robots.txt.",
+            steps=["Remove the rule that matches the site root.",
+                   "Restrict disallow rules to genuinely private paths.",
+                   "Re-check with a robots.txt parser after deployment."],
+            reach=1.0, on_important_page=True, sample_size=1, affected=1,
+        ))
+        return out
+
     if not ev.home_reachable:
         out.append(make_finding(
             check_id="site_unreachable", category="discoverability",
@@ -84,10 +208,16 @@ def _discover_stage(ev: SiteEvidence, cfg: AuditConfig) -> list[Finding]:
             url=ev.target_url,
             observation=(
                 f"A GET request to {ev.target_url} returned "
-                f"{ev.home_status if ev.home_status is not None else 'no response'}."
-            ),
-            details="Every downstream check depends on the homepage being retrievable.",
-            metrics={"home_status": ev.home_status},
+                f"{ev.home_status if ev.home_status is not None else 'no response'}"
+                + (f" ({ev.home_error})" if ev.home_error else "") + "."),
+            details=("Every downstream check depends on the homepage being "
+                     f"retrievable. Classified outcome: {ev.home_outcome}. This is a "
+                     "genuine failure to obtain a response, not a redirect the audit "
+                     "declined to follow."),
+            metrics={"home_status": ev.home_status,
+                     "outcome": ev.home_outcome,
+                     "error": ev.home_error,
+                     "redirect_count": len(ev.home_redirect_chain)},
             impact=("If the entry point cannot be retrieved, automated systems have "
                     "no reliable starting point for the site and may fall back to "
                     "third-party descriptions of the brand."),
@@ -512,7 +642,12 @@ def _understand_stage(ev: SiteEvidence, cfg: AuditConfig) -> list[Finding]:
             details=(f"Threshold used: fewer than {cfg.thin_content_words} words. "
                      "Pages whose text is supplied by JavaScript are excluded here and "
                      "reported under the rendering check instead, as are contact and "
-                     "legal pages and navigation hubs, which are short by design."),
+                     "legal pages and navigation hubs, which are short by design."
+                     + ("" if ev.render_evidence_available else
+                        " No rendered evidence was available for this run ("
+                        f"{ev.rendering.get('status', 'unknown')}), so content that is "
+                        "injected by JavaScript would not have been counted; this "
+                        "finding is based on the server-rendered HTML alone.")),
             metrics={"thin_pages": len(thin), "threshold_words": cfg.thin_content_words,
                      "word_counts": {p.url: p.word_count for p in thin[:8]}},
             affected_urls=[p.url for p in thin],
@@ -523,9 +658,17 @@ def _understand_stage(ev: SiteEvidence, cfg: AuditConfig) -> list[Finding]:
             steps=["Identify the facts the page is meant to convey.",
                    "Write them into the page body as text rather than as images or downloads.",
                    "Keep headings descriptive so the structure explains the content."],
+            benign_explanations=([
+                "Rendered evidence was not available for this run, so a page whose "
+                "text is supplied by JavaScript could appear thin here while reading "
+                "normally in a browser. Re-run with rendering enabled to confirm.",
+            ] if not ev.render_evidence_available else []),
             reach=len(thin) / max(len(ev.important_pages) or 1, 1),
             on_important_page=True,
             sample_size=len(ev.important_pages) or 1, affected=len(thin),
+            # Without rendered evidence the absence of text is not fully
+            # established, so confidence must reflect that.
+            conflicting_signals=not ev.render_evidence_available,
         ))
 
     missing_h1 = [p for p in html_pages if p.importance >= 0.5 and not p.h1]
@@ -791,6 +934,7 @@ def _extract_stage(ev: SiteEvidence, cfg: AuditConfig) -> list[Finding]:
             reach=len(image_only) / max(len(ev.important_pages) or 1, 1),
             on_important_page=True,
             sample_size=len(ev.important_pages) or 1, affected=len(image_only),
+            conflicting_signals=not ev.render_evidence_available,
         ))
     return out
 

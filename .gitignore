@@ -1,10 +1,27 @@
+# Python
 __pycache__/
 *.pyc
-.venv/
-.pytest_cache/
 *.egg-info/
+.venv/
+venv/
+
+# Test and tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+playwright-report/
+test-results/
+
+# Local audit output. The demo deliverables are checked in deliberately and are
+# re-included below, because the bare patterns would otherwise exclude them.
 *report*.json
 *report*.html
 evidence.json
-playwright-report/
-test-results/
+latest_report.*
+!demo/example_report.json
+!demo/example_report.html
+
+# Local environment and credentials
+.env
+.env.*
+*.pem

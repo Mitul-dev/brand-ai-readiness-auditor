@@ -1,6 +1,6 @@
 {
   "site": "127.0.0.1",
-  "audited_at": "2026-09-05T05:48:29+00:00",
+  "audited_at": "2026-09-12T09:04:08+00:00",
   "summary": {
     "total_findings": 11,
     "critical": 0,
@@ -8,13 +8,15 @@
     "medium": 4,
     "low": 0,
     "ai_readiness_score": 64,
+    "ai_readiness_assessed": true,
     "pages_crawled": 5,
     "pages_rendered": 5,
     "important_pages": 2,
-    "runtime_seconds": 3.71
+    "runtime_seconds": 3.46
   },
   "ai_readiness": {
     "overall": 64,
+    "assessed": true,
     "dimensions": {
       "Discoverability": 80,
       "Content Accessibility": 58,
@@ -37,7 +39,7 @@
       "Entity Clarity": "45/100 after 3 finding(s): No Organization or WebSite structured data was found anywhere on the site (-25); 4 of 4 product-style pages carry no Product structured data (-24); 1 page(s) contain a JSON-LD block that does not parse (-6)",
       "Fact Consistency": "100/100 - no findings in this dimension",
       "Freshness": "90/100 after 1 finding(s): Potential freshness risk: the most recent dates on the site are several years old (-10)",
-      "Engagement": "29/100 after 3 finding(s): Most crawled pages expose no navigation region (-25); 2 likely-important page(s) offer no obvious next action (-24); The homepage does not clearly state what the site is or what it offers (-21)"
+      "Engagement": "29/100 after 3 finding(s): No site-wide navigation could be detected (-25); 2 likely-important page(s) offer no obvious next action (-24); The homepage does not clearly state what the site is or what it offers (-21)"
     },
     "applicable": {
       "discoverability": true,
@@ -57,6 +59,45 @@
     "sitemap_present": false,
     "sitemap_url_count": 0,
     "renderer_available": true,
+    "rendering": {
+      "status": "complete",
+      "evidence_available": true,
+      "requested": 5,
+      "attempted": 5,
+      "succeeded": 5,
+      "failed": 0,
+      "error_sample": null,
+      "detail": "5 of 5 page(s) rendered"
+    },
+    "navigation": {
+      "strength": "absent",
+      "pages_considered": 5,
+      "pages_with_nav_landmark": 0,
+      "pages_with_header_landmark": 0,
+      "pages_with_footer_landmark": 5,
+      "pages_with_header_links": 0,
+      "pages_with_footer_links": 0,
+      "repeated_link_count": 0,
+      "repeated_links": [],
+      "repeated_link_share": 0.0,
+      "home_internal_links": 1,
+      "median_internal_links": 0,
+      "semantic_landmark_share": 0.0,
+      "signals": [],
+      "evidence_source": "rendered_dom"
+    },
+    "home_outcome": "ok",
+    "home_redirect_target": null,
+    "non_page_resources_excluded": 0,
+    "counts": {
+      "crawled": 5,
+      "pages": 5,
+      "non_page_resources": 0,
+      "html_ok": 5,
+      "important": 2,
+      "rendered": 5
+    },
+    "non_page_resources": [],
     "crawl_budget_exhausted": false,
     "page_roles": {
       "products": 4,
@@ -103,20 +144,33 @@
         }
       },
       "possible_benign_explanations": [],
-      "merged_from_checks": []
+      "merged_from_checks": [],
+      "reasoning": {
+        "root_cause_analysis": "Schema.org JSON-LD markup is absent or fails schema validation. AI engines rely on explicit JSON-LD nodes to ground entity graphs.",
+        "ai_agent_impact": "Inconsistent facts across pages create contradictory training or retrieval signals, leading AI models to misrepresent core brand facts to end users.",
+        "remediation_phase": "Phase 1: Immediate Access & Crawl Recovery (0-7 Days)",
+        "estimated_effort": "low",
+        "cross_finding_dependencies": [
+          "F-003",
+          "F-005",
+          "F-007"
+        ]
+      },
+      "enhanced_by_reasoning": true
     },
     {
       "id": "F-002",
-      "title": "Most crawled pages expose no navigation region",
+      "title": "No site-wide navigation could be detected",
       "severity": "high",
-      "evidence": "0 of 5 crawled HTML pages contain a <nav> element or role=\"navigation\"; the homepage exposes 1 internal links in total. Navigation was detected structurally (nav landmark plus internal links inside it), so a visually styled menu that uses neither will also be reported here.",
+      "evidence": "Across 5 crawled pages: 0 carry a nav landmark, 0 have a header link cluster, 0 have a footer link cluster, and 0 internal links repeat across most pages. The homepage exposes 1 internal links; the median page exposes 0. Navigation was tested by several independent signals - landmarks, header and footer link clusters, and internal links repeated across pages - so a menu built without semantic markup would still have been detected. Measured from the rendered DOM.",
       "suggested_action": {
-        "summary": "Provide a consistent primary navigation region on every page, marked up as a nav landmark.",
+        "summary": "Provide a consistent set of primary navigation links on every page.",
         "priority": "high",
         "steps": [
-          "Wrap the primary menu in a <nav> element present on every template.",
-          "Include links to the main sections (offering, pricing, about, contact).",
-          "Make sure the links exist in the server-rendered HTML, not only after client-side hydration."
+          "Add a primary menu to every page template linking the main sections.",
+          "Keep the same links in the same place across pages so the route is predictable.",
+          "Wrap the menu in a <nav> element so automated readers can identify it.",
+          "Make sure the links are present in the server-rendered HTML."
         ]
       },
       "category": "engagement",
@@ -124,7 +178,7 @@
       "check_id": "weak_navigation",
       "confidence": 0.98,
       "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; sample of 5 pages; consistent across 5/5 pages",
-      "impact": "Without a consistent navigation region, a visitor who lands on an interior page has no reliable way to move to the rest of the site, so the visit usually ends on the landing page.",
+      "impact": "A visitor who lands on an interior page has no consistent route to the rest of the site, so the visit tends to end on the landing page.",
       "priority_score": 0.6429,
       "priority_reason": "impact 0.80 (severity high) x reach 1.00 x confidence 0.98 x fixability 0.60",
       "reach": 1.0,
@@ -133,17 +187,39 @@
       ],
       "technical_details": {
         "url": "http://demo.example/",
-        "observation": "0 of 5 crawled HTML pages contain a <nav> element or role=\"navigation\"; the homepage exposes 1 internal links in total.",
-        "details": "Navigation was detected structurally (nav landmark plus internal links inside it), so a visually styled menu that uses neither will also be reported here.",
+        "observation": "Across 5 crawled pages: 0 carry a nav landmark, 0 have a header link cluster, 0 have a footer link cluster, and 0 internal links repeat across most pages. The homepage exposes 1 internal links; the median page exposes 0.",
+        "details": "Navigation was tested by several independent signals - landmarks, header and footer link clusters, and internal links repeated across pages - so a menu built without semantic markup would still have been detected. Measured from the rendered DOM.",
         "metrics": {
+          "strength": "absent",
+          "pages_considered": 5,
           "pages_with_nav_landmark": 0,
-          "pages": 5,
-          "nav_share": 0.0,
-          "home_internal_links": 1
+          "pages_with_header_landmark": 0,
+          "pages_with_footer_landmark": 5,
+          "pages_with_header_links": 0,
+          "pages_with_footer_links": 0,
+          "repeated_link_count": 0,
+          "repeated_link_share": 0.0,
+          "home_internal_links": 1,
+          "median_internal_links": 0,
+          "semantic_landmark_share": 0.0,
+          "signals": [],
+          "evidence_source": "rendered_dom",
+          "repeated_link_examples": []
         }
       },
       "possible_benign_explanations": [],
-      "merged_from_checks": []
+      "merged_from_checks": [],
+      "reasoning": {
+        "root_cause_analysis": "Observed measurement 'Across 5 crawled pages: 0 carry a nav landmark, 0 have a header link cluster, 0 have a footer link cluster, and 0 internal links repeat across most pages. The homepage exposes 1 internal links; the median page exposes 0.' deviates from AI indexing and extraction standards.",
+        "ai_agent_impact": "Autonomous crawlers and search agents cannot index or retrieve site resources, preventing the brand from appearing in AI knowledge bases or live retrieval queries.",
+        "remediation_phase": "Phase 1: Immediate Access & Crawl Recovery (0-7 Days)",
+        "estimated_effort": "medium",
+        "cross_finding_dependencies": [
+          "F-004",
+          "F-006"
+        ]
+      },
+      "enhanced_by_reasoning": true
     },
     {
       "id": "F-003",
@@ -185,7 +261,19 @@
         }
       },
       "possible_benign_explanations": [],
-      "merged_from_checks": []
+      "merged_from_checks": [],
+      "reasoning": {
+        "root_cause_analysis": "Observed measurement '0 of 4 pages that look like product pages expose Product/Offer structured data.' deviates from AI indexing and extraction standards.",
+        "ai_agent_impact": "Machine-readable structured data is missing or malformed, preventing AI agents from extracting discrete business entities, product specs, pricing, and operating facts.",
+        "remediation_phase": "Phase 1: Immediate Access & Crawl Recovery (0-7 Days)",
+        "estimated_effort": "medium",
+        "cross_finding_dependencies": [
+          "F-001",
+          "F-005",
+          "F-007"
+        ]
+      },
+      "enhanced_by_reasoning": true
     },
     {
       "id": "F-004",
@@ -226,7 +314,18 @@
         }
       },
       "possible_benign_explanations": [],
-      "merged_from_checks": []
+      "merged_from_checks": [],
+      "reasoning": {
+        "root_cause_analysis": "Observed measurement 'http://demo.example/ (role: home) contains no call-to-action link or button and only 1 internal link(s); http://demo.example/products (role: products) contains no call-to-action link or button and only 3 internal link(s)' deviates from AI indexing and extraction standards.",
+        "ai_agent_impact": "Autonomous crawlers and search agents cannot index or retrieve site resources, preventing the brand from appearing in AI knowledge bases or live retrieval queries.",
+        "remediation_phase": "Phase 1: Immediate Access & Crawl Recovery (0-7 Days)",
+        "estimated_effort": "low",
+        "cross_finding_dependencies": [
+          "F-002",
+          "F-006"
+        ]
+      },
+      "enhanced_by_reasoning": true
     },
     {
       "id": "F-005",
@@ -269,7 +368,19 @@
         }
       },
       "possible_benign_explanations": [],
-      "merged_from_checks": []
+      "merged_from_checks": [],
+      "reasoning": {
+        "root_cause_analysis": "Page body has only 0 words of extractable text, falling below semantic density thresholds needed for LLM retrieval and question-answering.",
+        "ai_agent_impact": "Content lacks semantic structure (headings, meta tags, or sufficient body text), forcing language models to guess context or generate low-confidence summaries.",
+        "remediation_phase": "Phase 1: Immediate Access & Crawl Recovery (0-7 Days)",
+        "estimated_effort": "medium",
+        "cross_finding_dependencies": [
+          "F-001",
+          "F-003",
+          "F-007"
+        ]
+      },
+      "enhanced_by_reasoning": true
     },
     {
       "id": "F-006",
@@ -314,7 +425,18 @@
       "possible_benign_explanations": [
         "A well-known brand may deliberately keep the homepage sparse and carry the explanation in imagery; confirm against the rendered page."
       ],
-      "merged_from_checks": []
+      "merged_from_checks": [],
+      "reasoning": {
+        "root_cause_analysis": "Observed measurement 'On the homepage, the page title is 'Home', which does not name the brand or what the site is for; there is no H1 heading stating what the site is.' deviates from AI indexing and extraction standards.",
+        "ai_agent_impact": "Autonomous crawlers and search agents cannot index or retrieve site resources, preventing the brand from appearing in AI knowledge bases or live retrieval queries.",
+        "remediation_phase": "Phase 1: Immediate Access & Crawl Recovery (0-7 Days)",
+        "estimated_effort": "medium",
+        "cross_finding_dependencies": [
+          "F-002",
+          "F-004"
+        ]
+      },
+      "enhanced_by_reasoning": true
     },
     {
       "id": "F-007",
@@ -358,7 +480,19 @@
         }
       },
       "possible_benign_explanations": [],
-      "merged_from_checks": []
+      "merged_from_checks": [],
+      "reasoning": {
+        "root_cause_analysis": "Core textual content is generated dynamically via client-side JavaScript (a high percentage added upon execution). Non-headless AI indexers parse only raw HTTP response HTML, rendering this content invisible.",
+        "ai_agent_impact": "Machine-readable structured data is missing or malformed, preventing AI agents from extracting discrete business entities, product specs, pricing, and operating facts.",
+        "remediation_phase": "Phase 1: Immediate Access & Crawl Recovery (0-7 Days)",
+        "estimated_effort": "high",
+        "cross_finding_dependencies": [
+          "F-001",
+          "F-003",
+          "F-005"
+        ]
+      },
+      "enhanced_by_reasoning": true
     },
     {
       "id": "F-008",
@@ -397,7 +531,19 @@
         }
       },
       "possible_benign_explanations": [],
-      "merged_from_checks": []
+      "merged_from_checks": [],
+      "reasoning": {
+        "root_cause_analysis": "Observed measurement 'http://demo.example/ has no <h1> (0 headings of any level); http://demo.example/products has no <h1> (0 headings of any level)' deviates from AI indexing and extraction standards.",
+        "ai_agent_impact": "Content lacks semantic structure (headings, meta tags, or sufficient body text), forcing language models to guess context or generate low-confidence summaries.",
+        "remediation_phase": "Phase 2: Structured Knowledge & Semantic Architecture (7-21 Days)",
+        "estimated_effort": "medium",
+        "cross_finding_dependencies": [
+          "F-001",
+          "F-003",
+          "F-005"
+        ]
+      },
+      "enhanced_by_reasoning": true
     },
     {
       "id": "F-009",
@@ -444,7 +590,19 @@
       "possible_benign_explanations": [
         "Reference content that has not changed is correctly left undated; an old date is not evidence that the facts are wrong."
       ],
-      "merged_from_checks": []
+      "merged_from_checks": [],
+      "reasoning": {
+        "root_cause_analysis": "Observed measurement '5 of 5 dated pages show no date later than 2025; the newest date found anywhere on the crawled pages is 2016.' deviates from AI indexing and extraction standards.",
+        "ai_agent_impact": "Entity verification signals and corroborating profiles are absent, reducing AI confidence in brand authority and increasing susceptibility to hallucinated competitors.",
+        "remediation_phase": "Phase 2: Structured Knowledge & Semantic Architecture (7-21 Days)",
+        "estimated_effort": "medium",
+        "cross_finding_dependencies": [
+          "F-001",
+          "F-003",
+          "F-005"
+        ]
+      },
+      "enhanced_by_reasoning": true
     },
     {
       "id": "F-010",
@@ -484,7 +642,19 @@
         }
       },
       "possible_benign_explanations": [],
-      "merged_from_checks": []
+      "merged_from_checks": [],
+      "reasoning": {
+        "root_cause_analysis": "Observed measurement 'Neither /sitemap.xml nor any Sitemap: directive in robots.txt returned a usable sitemap.' deviates from AI indexing and extraction standards.",
+        "ai_agent_impact": "Autonomous crawlers and search agents cannot index or retrieve site resources, preventing the brand from appearing in AI knowledge bases or live retrieval queries.",
+        "remediation_phase": "Phase 2: Structured Knowledge & Semantic Architecture (7-21 Days)",
+        "estimated_effort": "medium",
+        "cross_finding_dependencies": [
+          "F-001",
+          "F-003",
+          "F-005"
+        ]
+      },
+      "enhanced_by_reasoning": true
     },
     {
       "id": "F-011",
@@ -522,7 +692,77 @@
         }
       },
       "possible_benign_explanations": [],
-      "merged_from_checks": []
+      "merged_from_checks": [],
+      "reasoning": {
+        "root_cause_analysis": "Schema.org JSON-LD markup is absent or fails schema validation. AI engines rely on explicit JSON-LD nodes to ground entity graphs.",
+        "ai_agent_impact": "Machine-readable structured data is missing or malformed, preventing AI agents from extracting discrete business entities, product specs, pricing, and operating facts.",
+        "remediation_phase": "Phase 2: Structured Knowledge & Semantic Architecture (7-21 Days)",
+        "estimated_effort": "low",
+        "cross_finding_dependencies": [
+          "F-001",
+          "F-003",
+          "F-005"
+        ]
+      },
+      "enhanced_by_reasoning": true
     }
-  ]
+  ],
+  "strategic_reasoning": {
+    "executive_summary": "Audit analyzed 5 page(s) (5 rendered) on 127.0.0.1. Identified 11 total finding(s): 0 critical, 7 high, 4 medium, and 0 low. The primary architectural constraint is concentrated in the 'DISCOVER' stage. Executing the phased remediation plan will systematically upgrade AI discoverability and extraction fidelity.",
+    "primary_bottleneck_stage": "discover",
+    "strategic_themes": [
+      {
+        "theme": "Crawler Ingestion & Access Guardrails",
+        "diagnosis": "Crawlers face barriers reaching content. 4 discovery and 0 access issues were identified.",
+        "strategic_recommendation": "Ensure robots.txt allows AI user-agents, provide a clean XML sitemap, and serve critical content in static HTML rather than client-side execution."
+      },
+      {
+        "theme": "Machine-Readable Knowledge & Semantic Graph",
+        "diagnosis": "Extractability is impaired. 3 structured data/extraction gaps prevent discrete entity disambiguation.",
+        "strategic_recommendation": "Implement validated Schema.org Organization, WebSite, and Product JSON-LD entities. Align structured attributes identically with on-page human-visible text."
+      },
+      {
+        "theme": "Entity Authority & Contextual Retention",
+        "diagnosis": "Cross-page entity consistency or external authority corroboration requires strengthening.",
+        "strategic_recommendation": "Link official social/corporate profiles via sameAs properties and provide clear navigation trails and calls-to-action on interior landing pages."
+      }
+    ],
+    "remediation_roadmap": [
+      {
+        "phase": "Phase 1: Immediate Unblocking (Days 0-7)",
+        "objective": "Eliminate crawl blockers, HTTP errors, and indexing restrictions.",
+        "actions": [
+          "Fix No Organization or WebSite structured data was found anywhere on the site (F-001)",
+          "Fix No site-wide navigation could be detected (F-002)",
+          "Fix 4 of 4 product-style pages carry no Product structured data (F-003)",
+          "Fix 2 likely-important page(s) offer no obvious next action (F-004)",
+          "Fix 2 likely-important page(s) contain very little extractable text (F-005)"
+        ]
+      },
+      {
+        "phase": "Phase 2: Semantic Graph & Structured Data (Days 7-21)",
+        "objective": "Publish valid Schema.org entities and resolve content depth/JS dependency.",
+        "actions": [
+          "Remediate 2 likely-important page(s) have no H1 heading (F-008)",
+          "Remediate Potential freshness risk: the most recent dates on the site are several years old (F-009)",
+          "Remediate No XML sitemap was found (F-010)",
+          "Remediate 1 page(s) contain a JSON-LD block that does not parse (F-011)"
+        ]
+      },
+      {
+        "phase": "Phase 3: Authority, Corroboration & Next Steps (Days 21-45)",
+        "objective": "Strengthen external entity corroboration and interior user/agent journey continuity.",
+        "actions": [
+          "Audit outbound entity citations and navigation paths."
+        ]
+      }
+    ],
+    "findings_by_stage_count": {
+      "represent": 1,
+      "discover": 4,
+      "extract": 3,
+      "understand": 2,
+      "trust": 1
+    }
+  }
 }

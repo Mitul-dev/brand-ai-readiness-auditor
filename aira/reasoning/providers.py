@@ -19,9 +19,28 @@ from typing import Any
 
 from aira.evidence import SiteEvidence
 from aira.findings import Finding
-from aira.reasoning.validation import extract_known_urls, sanitize_text_grounding
+from aira.reasoning.validation import (
+    clean_reasoning_text,
+    coerce_enum,
+    coerce_list,
+    coerce_text,
+    extract_known_urls,
+    grounded_numbers,
+    sanitize_text_grounding,
+)
 
 log = logging.getLogger("aira.reasoning")
+
+# A model may pick from these; it may not invent new values, because they are
+# rendered as labels in the report.
+REMEDIATION_PHASES = (
+    "Phase 1: Immediate Access & Crawl Recovery (0-7 Days)",
+    "Phase 2: Structured Knowledge & Semantic Architecture (7-21 Days)",
+    "Phase 3: Authority Corroboration & Context Enrichment (21-45 Days)",
+)
+EFFORT_LEVELS = ("low", "medium", "high")
+JOURNEY_STAGES = ("discover", "access", "understand", "extract", "trust",
+                  "represent", "engagement", "none")
 
 
 class ReasoningProvider(abc.ABC):
@@ -313,23 +332,31 @@ class LLMReasoningProvider(ReasoningProvider):
         try:
             prompt = self._build_finding_prompt(finding, evidence)
             response_json = self._call_llm_json(prompt)
+            if not isinstance(response_json, dict):
+                raise TypeError(
+                    f"model returned {type(response_json).__name__}, expected an object")
             known_urls = extract_known_urls(evidence, [finding])
-            
-            root_cause = sanitize_text_grounding(
-                response_json.get("root_cause_analysis", ""), known_urls
-            ) or self.fallback.enrich_finding(finding, evidence, related_findings)["root_cause_analysis"]
-            
-            ai_impact = sanitize_text_grounding(
-                response_json.get("ai_agent_impact", ""), known_urls
-            ) or self.fallback.enrich_finding(finding, evidence, related_findings)["ai_agent_impact"]
+            known_numbers = grounded_numbers(finding, evidence)
+            fallback = self.fallback.enrich_finding(finding, evidence, related_findings)
+
+            # Every field is shape-checked, length-bounded and grounding-checked:
+            # a response that parses as JSON is not yet a response we can publish.
+            root_cause = clean_reasoning_text(
+                response_json.get("root_cause_analysis"), known_urls, known_numbers
+            ) or fallback["root_cause_analysis"]
+            ai_impact = clean_reasoning_text(
+                response_json.get("ai_agent_impact"), known_urls, known_numbers
+            ) or fallback["ai_agent_impact"]
 
             return {
                 "root_cause_analysis": root_cause,
                 "ai_agent_impact": ai_impact,
-                "remediation_phase": response_json.get(
-                    "remediation_phase", "Phase 2: Structured Knowledge (7-21 Days)"
-                ),
-                "estimated_effort": response_json.get("estimated_effort", "medium"),
+                "remediation_phase": coerce_enum(
+                    response_json.get("remediation_phase"), REMEDIATION_PHASES,
+                    fallback.get("remediation_phase", REMEDIATION_PHASES[1])),
+                "estimated_effort": coerce_enum(
+                    response_json.get("estimated_effort"), EFFORT_LEVELS,
+                    fallback.get("estimated_effort", "medium")),
                 "cross_finding_dependencies": [
                     rf.id for rf in related_findings if rf.id != finding.id
                 ][:3],
@@ -349,24 +376,29 @@ class LLMReasoningProvider(ReasoningProvider):
         try:
             prompt = self._build_strategy_prompt(evidence, findings)
             response_json = self._call_llm_json(prompt)
+            if not isinstance(response_json, dict):
+                raise TypeError(
+                    f"model returned {type(response_json).__name__}, expected an object")
             known_urls = extract_known_urls(evidence, findings)
-
-            exec_summary = sanitize_text_grounding(
-                response_json.get("executive_summary", ""), known_urls
-            )
+            known_numbers: set[str] = set()
+            for f in findings:
+                known_numbers |= grounded_numbers(f, evidence)
             fallback_res = self.fallback.synthesize_strategy(evidence, findings)
+
+            exec_summary = clean_reasoning_text(
+                response_json.get("executive_summary"), known_urls, known_numbers)
+            themes = coerce_list(response_json.get("strategic_themes"))
+            roadmap = coerce_list(response_json.get("remediation_roadmap"))
 
             return {
                 "executive_summary": exec_summary or fallback_res["executive_summary"],
-                "primary_bottleneck_stage": response_json.get(
-                    "primary_bottleneck_stage", fallback_res["primary_bottleneck_stage"]
-                ),
-                "strategic_themes": response_json.get(
-                    "strategic_themes", fallback_res["strategic_themes"]
-                ),
-                "remediation_roadmap": response_json.get(
-                    "remediation_roadmap", fallback_res["remediation_roadmap"]
-                ),
+                "primary_bottleneck_stage": coerce_enum(
+                    response_json.get("primary_bottleneck_stage"), JOURNEY_STAGES,
+                    fallback_res["primary_bottleneck_stage"]),
+                "strategic_themes": themes or fallback_res["strategic_themes"],
+                "remediation_roadmap": roadmap or fallback_res["remediation_roadmap"],
+                # Counts are never taken from the model: they are recomputed from
+                # the deterministic findings every time.
                 "findings_by_stage_count": fallback_res["findings_by_stage_count"],
             }
         except Exception as exc:

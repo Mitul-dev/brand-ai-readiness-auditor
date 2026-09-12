@@ -443,6 +443,75 @@ def build_header_noindex(site="header_noindex"):
     }, indent=2), encoding="utf-8")
 
 
+# ------------------- 17. functional navigation without a <nav> element -------
+def build_nav_without_landmark(site="nav_without_landmark"):
+    """Header and footer link clusters repeated on every page, but no <nav>.
+
+    Navigation works perfectly for a visitor; only the semantic landmark is
+    missing. This must never produce a high-severity navigation finding.
+    """
+    header = ('<header><a href="/">Home</a> <a href="/about">About</a> '
+              '<a href="/products">Products</a> <a href="/pricing">Pricing</a> '
+              '<a href="/contact">Contact</a></header>')
+    footer = ('<footer><a href="/about">About</a> <a href="/products">Products</a> '
+              '<a href="/contact">Contact</a> '
+              '&copy; 2026 Northwind Instruments</footer>')
+
+    def nav_page(title, h1, body, rel):
+        html = (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
+                f'<title>{title}</title><meta name="description" content="{h1}">'
+                '<script type="application/ld+json">' + json.dumps(ORG) + '</script>'
+                f'</head><body>{header}<main><h1>{h1}</h1>{body}'
+                '<p><a href="/contact">Request a quote</a></p></main>'
+                f'{footer}</body></html>')
+        write(site, rel, html)
+
+    for rel, title, h1 in [
+        ("index.html", "Northwind Instruments - calibrated lab hardware",
+         "Calibrated measurement instruments for laboratories"),
+        ("about/index.html", "About - Northwind Instruments", "About Northwind Instruments"),
+        ("products/index.html", "Products - Northwind Instruments", "Our products"),
+        ("pricing/index.html", "Pricing - Northwind Instruments", "Pricing"),
+        ("contact/index.html", "Contact - Northwind Instruments", "Contact us"),
+    ]:
+        nav_page(title, h1, f"<p>{LOREM}{LOREM}</p>", rel)
+    write(site, "robots.txt", "User-agent: *\nAllow: /\nSitemap: http://SITEHOST/sitemap.xml\n")
+    write(site, "sitemap.xml", sitemap(["/", "/about", "/products", "/pricing",
+                                        "/contact"]))
+
+
+# --------------- 18. internal component / fragment / API endpoints ----------
+def build_component_endpoints(site="component_endpoints"):
+    """A healthy site that also exposes implementation endpoints.
+
+    The endpoints answer with HTTP 200 and HTML-ish markup but are not pages.
+    They must be recorded as evidence and excluded from page-level checks.
+    """
+    build_good(site)
+    index = ROOT / site / "index.html"
+    html = index.read_text(encoding="utf-8")
+    extra = ('<a href="/homepage/fragments/hero">hero</a>'
+             '<a href="/content-fragments/promo-banner">promo</a>'
+             '<a href="/components/cta-band">cta</a>'
+             '<a href="/api/v1/catalogue">catalogue</a>')
+    index.write_text(html.replace("</main>", extra + "</main>"), encoding="utf-8")
+
+    # Naked markup: no doctype, no <html>, no <head>, no <title>.
+    for rel, markup in [
+        ("homepage/fragments/hero/index.html",
+         '<div class="hero"><p>Hero component markup</p></div>'),
+        ("content-fragments/promo-banner/index.html",
+         '<div class="promo"><span>Promo</span></div>'),
+        ("components/cta-band/index.html",
+         '<section class="cta"><button>Act</button></section>'),
+    ]:
+        write(site, rel, markup)
+    write(site, "api/v1/catalogue/index.html", '{"items": [1, 2, 3]}')
+    (ROOT / site / "_headers.json").write_text(json.dumps({
+        "/api/v1/catalogue": {"Content-Type": "application/json"}
+    }, indent=2), encoding="utf-8")
+
+
 def build_all() -> None:
     build_good()
     build_robots_blocked()
@@ -460,6 +529,8 @@ def build_all() -> None:
     build_stale_sitemap()
     build_non_english()
     build_header_noindex()
+    build_nav_without_landmark()
+    build_component_endpoints()
     print("fixtures written to", ROOT)
 
 

@@ -19,8 +19,10 @@ from .facts import (
     extract_socials, normalize_org_name,
 )
 from .importance import classify_role, score_importance
+from .navigation import NavigationEvidence, analyse_navigation
 from .parsing import ParsedPage, flatten_jsonld, node_types, parse_page, raw_text_metrics
-from .render import RenderedPage, render_pages, renderer_available
+from .resources import NON_PAGE_KINDS, PAGE, classify_resource, path_shape
+from .render import RenderedPage, RenderRun, render_pages, renderer_available
 from .urls import path_depth
 
 log = logging.getLogger("aira.evidence")
@@ -56,6 +58,13 @@ class PageEvidence:
     role: str
     importance: float
     importance_reasons: list[str] = field(default_factory=list)
+    # Resource classification. Only ``is_page`` resources take part in
+    # page-level checks; everything else is kept as evidence but never judged as
+    # though it were a page a visitor could land on.
+    resource_kind: str = PAGE
+    is_page: bool = True
+    resource_reasons: list[str] = field(default_factory=list)
+    document_complete: bool = True
 
     # access
     status: int | None = None
@@ -63,6 +72,11 @@ class PageEvidence:
     robots_allowed: bool = True
     redirect_count: int = 0
     final_url: str = ""
+    fetched: bool = False
+    redirect_outcome: str = "none"
+    redirect_refusal_reason: str | None = None
+    redirect_refused_target: str | None = None
+    final_attempted_url: str = ""
     error: str | None = None
     depth: int = 0
     in_sitemap: bool = False
@@ -87,6 +101,11 @@ class PageEvidence:
     images_without_alt: int = 0
     has_main_landmark: bool = False
     has_nav_landmark: bool = False
+    has_header_landmark: bool = False
+    has_footer_landmark: bool = False
+    header_internal_links: int = 0
+    footer_internal_links: int = 0
+    nav_internal_links: int = 0
     cta_count: int = 0
     cta_examples: list[str] = field(default_factory=list)
     text_sample: str = ""
@@ -134,11 +153,17 @@ class SiteEvidence:
     sitemap_broken_urls: list[str] = field(default_factory=list)
     ai_agent_rules: dict[str, dict[str, Any]] = field(default_factory=dict)
     primary_lang: str = ""
+    navigation: dict[str, Any] = field(default_factory=dict)
     home_status: int | None = None
     home_reachable: bool = False
+    home_outcome: str = "unknown"
+    home_redirect_target: str | None = None
+    home_redirect_chain: list[str] = field(default_factory=list)
+    home_error: str | None = None
 
     renderer_available: bool = False
     rendered_page_count: int = 0
+    rendering: dict[str, Any] = field(default_factory=dict)
 
     crawl_duration_s: float = 0.0
     crawl_budget_exhausted: bool = False
@@ -149,7 +174,23 @@ class SiteEvidence:
     # -- convenience accessors used by audit modules ---------------------
     @property
     def html_pages(self) -> list[PageEvidence]:
-        return [p for p in self.pages if p.ok and p.word_count > 0]
+        """Real, navigable HTML pages - the only things page-level checks judge."""
+        return [p for p in self.pages
+                if p.ok and p.is_page and p.word_count > 0]
+
+    @property
+    def render_evidence_available(self) -> bool:
+        """True only when at least one page was actually rendered successfully.
+
+        Checks that reason about content being absent must consult this before
+        drawing a confident conclusion.
+        """
+        return bool(self.rendering.get("evidence_available"))
+
+    @property
+    def non_page_resources(self) -> list[PageEvidence]:
+        """Fetched URLs that are not standalone pages (fragments, APIs, assets)."""
+        return [p for p in self.pages if not p.is_page]
 
     @property
     def important_pages(self) -> list[PageEvidence]:
@@ -165,6 +206,8 @@ class SiteEvidence:
     def counts(self) -> dict[str, int]:
         return {
             "crawled": len(self.pages),
+            "pages": len(self.html_pages),
+            "non_page_resources": len(self.non_page_resources),
             "html_ok": len(self.html_pages),
             "important": len(self.important_pages),
             "rendered": self.rendered_page_count,
@@ -188,13 +231,24 @@ class SiteEvidence:
                 "sitemap_broken_urls": self.sitemap_broken_urls,
                 "ai_agent_rules": self.ai_agent_rules,
                 "primary_lang": self.primary_lang,
+                "navigation": self.navigation,
                 "home_status": self.home_status,
                 "home_reachable": self.home_reachable,
+                "home_outcome": self.home_outcome,
+                "home_redirect_target": self.home_redirect_target,
+                "home_redirect_chain": self.home_redirect_chain,
+                "home_error": self.home_error,
                 "renderer_available": self.renderer_available,
                 "rendered_page_count": self.rendered_page_count,
+                "rendering": self.rendering,
                 "crawl_duration_s": self.crawl_duration_s,
                 "crawl_budget_exhausted": self.crawl_budget_exhausted,
                 "counts": self.counts(),
+                "non_page_resources": [
+                    {"url": p.url, "kind": p.resource_kind,
+                     "reasons": p.resource_reasons}
+                    for p in self.non_page_resources
+                ][:25],
                 "notes": self.notes,
             },
             "facts_by_kind": self.facts_by_kind,
@@ -225,10 +279,16 @@ class SiteEvidence:
             sitemap_broken_urls=site_level.get("sitemap_broken_urls", []),
             ai_agent_rules=site_level.get("ai_agent_rules", {}),
             primary_lang=site_level.get("primary_lang", ""),
+            navigation=site_level.get("navigation", {}),
             home_status=site_level.get("home_status"),
             home_reachable=site_level.get("home_reachable", False),
+            home_outcome=site_level.get("home_outcome", "unknown"),
+            home_redirect_target=site_level.get("home_redirect_target"),
+            home_redirect_chain=site_level.get("home_redirect_chain", []),
+            home_error=site_level.get("home_error"),
             renderer_available=site_level.get("renderer_available", False),
             rendered_page_count=site_level.get("rendered_page_count", 0),
+            rendering=site_level.get("rendering", {}),
             crawl_duration_s=site_level.get("crawl_duration_s", 0.0),
             crawl_budget_exhausted=site_level.get("crawl_budget_exhausted", False),
             notes=site_level.get("notes", []),
@@ -429,6 +489,55 @@ def rendered_only_text(raw_text: str, rendered_text: str, limit: int = 260) -> s
     return excerpt + ("..." if len(" ".join(picked)) > limit else "")
 
 
+# How the homepage request ended. These are deliberately distinct: "we declined
+# to follow a redirect" and "the site failed to answer" are different facts about
+# the world and must not collapse into one finding.
+HOME_OUTCOMES = (
+    "ok",                       # a 2xx response was actually fetched
+    "external_redirect",        # answered with a redirect off-site; not followed
+    "private_redirect",         # answered with a redirect to a non-public address
+    "robots_redirect",          # redirect target is disallowed by robots.txt
+    "redirect_loop",
+    "redirect_limit",
+    "bad_location",
+    "http_error",               # fetched, but 4xx/5xx
+    "transport_error",          # DNS / TLS / timeout / connection failure
+    "robots_blocked",           # the homepage itself is disallowed
+    "unknown",
+)
+
+# Outcomes where the origin server demonstrably answered. The site is up; we
+# simply stopped by our own policy. These must never produce "site unreachable".
+POLICY_REFUSAL_OUTCOMES = frozenset(
+    {"external_redirect", "private_redirect", "robots_redirect"})
+
+
+def classify_home_outcome(page: "RawPage | None") -> str:
+    """Classify how the homepage request ended, from the recorded evidence."""
+    if page is None:
+        return "unknown"
+    outcome = page.redirect_outcome
+    if outcome == "refused_external_domain":
+        return "external_redirect"
+    if outcome == "refused_non_public_address":
+        return "private_redirect"
+    if outcome == "refused_robots":
+        return "robots_blocked" if not page.redirect_chain else "robots_redirect"
+    if outcome == "loop":
+        return "redirect_loop"
+    if outcome == "limit_exceeded":
+        return "redirect_limit"
+    if outcome == "bad_location":
+        return "bad_location"
+    if outcome == "transport_error" or page.status is None:
+        return "transport_error"
+    if page.fetched and 200 <= (page.status or 0) < 300:
+        return "ok"
+    if page.fetched:
+        return "http_error"
+    return "transport_error"
+
+
 def _robots_blocked_paths(robots_txt: str | None) -> tuple[bool, list[str]]:
     """Detect a global disallow and list disallowed path prefixes."""
     if not robots_txt:
@@ -469,8 +578,18 @@ def build_evidence(crawl: CrawlResult, config: AuditConfig) -> SiteEvidence:
     ev.sitemap_present = bool(crawl.sitemap_locations)
     ev.sitemap_locations = crawl.sitemap_locations
     ev.sitemap_url_count = len(crawl.sitemap_urls)
+    home_raw = next((p for p in crawl.pages if p.url == site_url), None)
     ev.home_status = crawl.home_status
-    ev.home_reachable = crawl.home_status is not None and 200 <= crawl.home_status < 300
+    ev.home_outcome = classify_home_outcome(home_raw)
+    if home_raw is not None:
+        ev.home_redirect_target = home_raw.redirect_refused_target
+        ev.home_redirect_chain = list(home_raw.redirect_chain)
+        ev.home_error = home_raw.error
+    # "Reachable" means the origin answered, not that we chose to read the answer.
+    # A country/locale redirect we decline to follow leaves the site perfectly
+    # reachable; only a real failure to get a response makes it unreachable.
+    ev.home_reachable = (
+        ev.home_outcome == "ok" or ev.home_outcome in POLICY_REFUSAL_OUTCOMES)
     ev.crawl_duration_s = crawl.duration_s
     ev.crawl_budget_exhausted = crawl.budget_exhausted
     ev.notes = list(crawl.notes)
@@ -504,18 +623,25 @@ def build_evidence(crawl: CrawlResult, config: AuditConfig) -> SiteEvidence:
         [u for u, p in parsed_by_url.items() if raw_by_url[u].ok],
         key=lambda u: (-_prelim_importance(u, parsed_by_url[u], site_url, nav_targets), u),
     )
-    rendered: dict[str, RenderedPage] = {}
-    if ev.renderer_available:
-        rendered = render_pages(render_candidates, config)
-        ev.rendered_page_count = sum(1 for r in rendered.values() if r.ok)
-        if rendered and ev.rendered_page_count == 0:
-            first_error = next((r.error for r in rendered.values() if r.error), None)
-            ev.notes.append(
-                "rendering was attempted but no page rendered successfully "
-                f"({first_error or 'unknown error'}); raw-vs-rendered checks were "
-                "not applicable for this run")
-        elif not rendered and config.render:
-            ev.notes.append("no page was eligible for rendering")
+    # render_pages is the single authority on what happened: passing it the real
+    # config and candidates means a missing browser is reported as
+    # "browser_unavailable" rather than being flattened into "not requested".
+    run: RenderRun = render_pages(render_candidates, config)
+    rendered: dict[str, RenderedPage] = run.pages
+    ev.rendered_page_count = run.succeeded
+    ev.rendering = run.to_dict()
+    if not run.evidence_available:
+        ev.notes.append(
+            f"rendering evidence unavailable ({run.status}): {run.detail}. "
+            "Raw-versus-rendered comparison was not performed, so this report "
+            "makes no claim about JavaScript-injected content.")
+
+    # How many crawled URLs share each leading path shape - a repeated
+    # implementation path is stronger evidence than one odd-looking URL.
+    shape_counts: dict[str, int] = {}
+    for u in raw_by_url:
+        shape = path_shape(u)
+        shape_counts[shape] = shape_counts.get(shape, 0) + 1
 
     # --- per-page evidence ---------------------------------------------
     all_facts: list[FactObservation] = []
@@ -536,6 +662,10 @@ def build_evidence(crawl: CrawlResult, config: AuditConfig) -> SiteEvidence:
             url=url, role=role, importance=imp, importance_reasons=reasons,
             status=raw.status, ok=raw.ok, robots_allowed=raw.robots_allowed,
             redirect_count=len(raw.redirect_chain), final_url=raw.final_url,
+            fetched=raw.fetched, redirect_outcome=raw.redirect_outcome,
+            redirect_refusal_reason=raw.redirect_refusal_reason,
+            redirect_refused_target=raw.redirect_refused_target,
+            final_attempted_url=raw.final_attempted_url or raw.final_url,
             error=raw.error, depth=depth, in_sitemap=url in sitemap_set,
             in_primary_nav=in_nav,
             incoming_internal_links=incoming.get(url, 0),
@@ -551,6 +681,11 @@ def build_evidence(crawl: CrawlResult, config: AuditConfig) -> SiteEvidence:
             images_without_alt=parsed.images_without_alt,
             has_main_landmark=parsed.has_main_landmark,
             has_nav_landmark=parsed.has_nav_landmark,
+            has_header_landmark=parsed.has_header_landmark,
+            has_footer_landmark=parsed.has_footer_landmark,
+            header_internal_links=len(parsed.header_links),
+            footer_internal_links=len(parsed.footer_links),
+            nav_internal_links=len(parsed.nav_links),
             cta_count=len(parsed.cta_texts),
             cta_examples=parsed.cta_texts[:5],
             text_sample=parsed.text[:400],
@@ -560,6 +695,27 @@ def build_evidence(crawl: CrawlResult, config: AuditConfig) -> SiteEvidence:
             og_keys=sorted(parsed.og.keys()),
             x_robots_tag=(raw.x_robots_tag or "").lower(),
         )
+        verdict = classify_resource(
+            url=url, content_type=raw.content_type, status=raw.status,
+            fetched=raw.fetched,
+            has_html_element=parsed.has_html_element, has_head=parsed.has_head,
+            has_title=bool(parsed.title), word_count=parsed.word_count,
+            outgoing_internal_links=len(parsed.internal_links),
+            incoming_internal_links=incoming.get(url, 0),
+            sibling_pattern_count=shape_counts.get(path_shape(url), 1) - 1,
+        )
+        pe.resource_kind = verdict.kind
+        pe.is_page = verdict.is_page
+        pe.resource_reasons = list(verdict.reasons)
+        pe.document_complete = (parsed.has_html_element and parsed.has_head
+                                and bool(parsed.title))
+        if not verdict.is_page:
+            # A non-page must never be scored as an important page, and must
+            # never be counted in a page-level denominator.
+            pe.importance = 0.0
+            pe.importance_reasons = [
+                f"not a standalone page ({verdict.kind}): {verdict.reasons[0]}"]
+            pe.role = "non_page"
         nodes = flatten_jsonld(parsed.jsonld_blocks)
         pe.jsonld_defects, pe.jsonld_primary_name = validate_schema_nodes(nodes)
 
@@ -604,7 +760,7 @@ def build_evidence(crawl: CrawlResult, config: AuditConfig) -> SiteEvidence:
             page_facts += extract_from_text(parsed.footer_text, "footer", url)
         if role in ("contact", "about", "home"):
             page_facts += extract_from_text(parsed.text[:8000], "text", url)
-        brand = brand_from_title(parsed.title)
+        brand = brand_from_title(parsed.title, crawl.target.registrable_host)
         if brand:
             page_facts.append(FactObservation("organization_name", brand,
                                               normalize_org_name(brand),
@@ -635,6 +791,30 @@ def build_evidence(crawl: CrawlResult, config: AuditConfig) -> SiteEvidence:
             if p.url in sitemap_set and p.status and
             (p.status in (404, 410) or p.status >= 500)
         ][:20]
+
+    # Navigation is judged from behaviour across real pages, using rendered
+    # markup where it was available and raw HTML otherwise.
+    nav_observations = []
+    for pe in ev.pages:
+        if not pe.is_page or not pe.ok:
+            continue
+        parsed = parsed_by_url.get(pe.url)
+        if parsed is None:
+            continue
+        nav_observations.append({
+            "url": pe.url,
+            "internal_links": parsed.internal_links,
+            "nav_links": parsed.nav_links,
+            "header_links": parsed.header_links,
+            "footer_links": parsed.footer_links,
+            "has_nav_landmark": parsed.has_nav_landmark,
+            "has_header_landmark": parsed.has_header_landmark,
+            "has_footer_landmark": parsed.has_footer_landmark,
+        })
+    home_obs = next((o for o in nav_observations if o["url"] == site_url), None)
+    nav_source = ("rendered_dom" if ev.rendered_page_count else "raw_html")
+    ev.navigation = analyse_navigation(nav_observations, home_obs,
+                                       evidence_source=nav_source).to_dict()
 
     langs = [p.lang.split("-")[0].lower() for p in ev.pages if p.lang]
     if langs:

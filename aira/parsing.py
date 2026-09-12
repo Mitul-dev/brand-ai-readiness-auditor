@@ -32,6 +32,10 @@ class ParsedPage:
     internal_links: list[str] = field(default_factory=list)
     external_links: list[str] = field(default_factory=list)
     nav_links: list[str] = field(default_factory=list)
+    header_links: list[str] = field(default_factory=list)
+    footer_links: list[str] = field(default_factory=list)
+    has_header_landmark: bool = False
+    has_footer_landmark: bool = False
     footer_text: str = ""
     jsonld_blocks: list[Any] = field(default_factory=list)
     jsonld_invalid: list[str] = field(default_factory=list)
@@ -45,6 +49,14 @@ class ParsedPage:
     has_nav_landmark: bool = False
     time_elements: list[str] = field(default_factory=list)
     cta_texts: list[str] = field(default_factory=list)
+    # Document-shape signals. A standalone page is served as a complete HTML
+    # document; a component or fragment endpoint returns naked markup. This is
+    # the strongest generic signal for telling the two apart, and it needs no
+    # knowledge of any particular CMS's URL conventions.
+    has_html_element: bool = False
+    has_head: bool = False
+    has_body: bool = False
+    has_doctype: bool = False
 
 
 def soup_of(html: str) -> BeautifulSoup:
@@ -88,6 +100,12 @@ def parse_page(html: str, url: str, site_url: str) -> ParsedPage:
         return p
     soup = soup_of(html)
 
+    lowered = html[:2048].lstrip().lower()
+    p.has_doctype = lowered.startswith("<!doctype")
+    p.has_html_element = bool(re.search(r"<html[\s>]", html[:4096], re.I))
+    p.has_head = bool(re.search(r"<head[\s>]", html[:8192], re.I))
+    p.has_body = bool(re.search(r"<body[\s>]", html, re.I))
+
     if soup.title and soup.title.string:
         p.title = soup.title.string.strip()
     html_tag = soup.find("html")
@@ -120,13 +138,29 @@ def parse_page(html: str, url: str, site_url: str) -> ParsedPage:
         for t in soup.find_all("time")
     ][:20]
 
-    nav = soup.find("nav") or soup.find(attrs={"role": "navigation"})
-    if nav:
-        for a in nav.find_all("a", href=True):
+    def _region_links(region) -> list[str]:
+        found: list[str] = []
+        if not region:
+            return found
+        for a in region.find_all("a", href=True):
             n = normalize_url(a["href"], url)
             if n and same_site(n, site_url):
-                p.nav_links.append(n)
+                found.append(n)
+        return list(dict.fromkeys(found))
+
+    nav = soup.find("nav") or soup.find(attrs={"role": "navigation"})
+    p.nav_links = _region_links(nav)
+
+    # Navigation is frequently built from a header or footer link cluster with no
+    # <nav> element at all. Those links are recorded separately so that the audit
+    # can tell "no semantic landmark" apart from "no navigation".
+    header = soup.find("header") or soup.find(attrs={"role": "banner"})
+    p.has_header_landmark = bool(header)
+    p.header_links = _region_links(header)
+
     footer = soup.find("footer") or soup.find(attrs={"role": "contentinfo"})
+    p.has_footer_landmark = bool(footer)
+    p.footer_links = _region_links(footer)
     if footer:
         p.footer_text = re.sub(r"\s+", " ", footer.get_text(" ", strip=True))[:2000]
 

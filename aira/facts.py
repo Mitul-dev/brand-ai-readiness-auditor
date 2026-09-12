@@ -183,18 +183,39 @@ def extract_from_jsonld(nodes: list[dict[str, Any]], url: str) -> list[FactObser
     return obs
 
 
-def brand_from_title(title: str) -> str | None:
-    """Sites usually put the brand after a separator in <title>."""
+def brand_from_title(title: str, site_host: str = "") -> str | None:
+    """Extract the brand from a page title, or nothing when it is ambiguous.
+
+    Titles carry the brand in either order - "Brand | Page" and
+    "Brand - what we do" are both common - so assuming a fixed position turns a
+    tagline into a brand name and manufactures an identity conflict. The segment
+    is therefore only accepted when it corroborates the site's own hostname;
+    otherwise the title is left out, because it is the weakest brand source
+    available and a wrong value here is worse than no value.
+    """
     if not title:
         return None
-    parts = re.split(r"\s[|–—\-·:]\s", title)
-    parts = [p.strip() for p in parts if p.strip()]
+    parts = [p.strip() for p in re.split(r"\s[|–—\-·:]\s", title) if p.strip()]
     if len(parts) < 2:
         return None
-    cand = parts[-1]
-    if len(cand) > 60 or len(cand.split()) > 6:
+    candidates = [p for p in parts if len(p) <= 60 and len(p.split()) <= 6]
+    if not candidates:
         return None
-    return cand
+
+    host_label = ""
+    if site_host:
+        labels = [x for x in site_host.lower().split(".")
+                  if x not in ("www", "com", "org", "net", "co", "io", "ai")]
+        host_label = labels[0] if labels else ""
+    if host_label:
+        squashed = re.sub(r"[^a-z0-9]", "", host_label)
+        for cand in candidates:
+            cand_squashed = re.sub(r"[^a-z0-9]", "", cand.lower())
+            if not cand_squashed:
+                continue
+            if cand_squashed.startswith(squashed) or squashed.startswith(cand_squashed):
+                return cand
+    return None
 
 
 def extract_from_text(text: str, source: str, url: str) -> list[FactObservation]:

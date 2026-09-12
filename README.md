@@ -261,16 +261,42 @@ The four fields the handout requires on every finding — `id`, `title`,
 `severity`, `evidence`, `suggested_action` — are always present; everything else
 is additive.
 
-## Web Dashboard
+## Web dashboard
 
-The project includes a lightweight local web dashboard for running audits
-through a browser.
-
-Start the dashboard:
+A lightweight Flask dashboard runs audits from a browser and renders the same
+report the CLI produces.
 
 ```bash
-python app.py
+python app.py                      # development, binds 0.0.0.0 on $PORT (default 8000)
 ```
+
+For production, the module exposes a WSGI callable named `app`:
+
+```bash
+gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 300
+```
+
+Notes that matter when deploying:
+
+- **Timeout.** An audit can run for minutes, so the worker timeout must exceed
+  the audit budget. The command above allows 300 seconds.
+- **Reports are held in memory**, keyed by an unguessable token, and are served
+  only through the link shown on the page that produced them. Nothing is written
+  to the working directory, so a read-only container filesystem is fine. The
+  cache is per process and bounded to the 20 most recent reports, so with
+  multiple workers a download link is only valid on the worker that produced it;
+  run a single worker if that matters to you.
+- **`/healthz`** returns `{"status": "ok"}` for a liveness probe.
+- **Playwright is not assumed to be present.** The image must install both the
+  Python package and the browser with system dependencies
+  (`python -m playwright install --with-deps chromium`) for rendering to work.
+  Many small container images and most serverless platforms cannot run Chromium.
+  When the browser is unavailable the audit still completes: the report records
+  `site_context.rendering.status` as `browser_unavailable` and no
+  JavaScript-related claim is made. See "Rendering is reported honestly" below.
+- **The dashboard will crawl any public URL a visitor submits.** Private,
+  loopback and link-local targets are refused, but put it behind
+  authentication or rate limiting before exposing it publicly.
 
 ---
 
@@ -329,7 +355,10 @@ report:
 - a missing meta description when the page supplies an `og:description`;
 - an absent `sameAs` on a site that never declared an Organization entity;
 - a contact or legal page as "thin content" — those are short by design;
-- English wording heuristics on a site published in another language.
+- English wording heuristics on a site published in another language;
+- a redirect the audit declined to follow as a site outage — see below;
+- a missing `<nav>` element as missing navigation — see below;
+- component, fragment, API and utility endpoints as though they were pages.
 
 Every check that can misfire also ships `possible_benign_explanations` in the
 report, naming the conditions under which the finding should be dismissed. The
@@ -339,12 +368,86 @@ the one place where reasoning, not code, makes the call.
 `tests/test_false_positives.py` enforces this: the healthy fixture must produce
 **zero** findings, with and without rendering.
 
+### A refusal to follow a redirect is not a site outage
+
+The crawler does not follow redirects across registrable domains, and it
+re-validates every hop against the address guard. That refusal is a decision
+about the auditor, not a statement about the site, so the two are recorded
+separately. Every homepage request is classified into one outcome:
+
+| Outcome | Meaning | Severity |
+|---|---|---|
+| `ok` | a 2xx response was fetched | no finding |
+| `external_redirect` | the origin answered with a redirect to another domain; not followed | **low** — `homepage_redirects_offsite` |
+| `private_redirect` | redirect target resolves to a non-public address | high |
+| `redirect_loop` / `redirect_limit` / `bad_location` | genuine redirect misconfiguration | high |
+| `http_error` | fetched, but 4xx or 5xx | critical |
+| `transport_error` | DNS, TLS, timeout or connection failure | critical |
+
+A country or locale redirect (`example.com` to `example.co.in`) is therefore a
+low-severity informational finding that names the destination and recommends
+re-running the audit against it. The evidence model keeps the original URL, the
+full redirect chain, the final attempted URL, the final *fetched* URL if any, the
+refusal reason and a `fetched` flag, so "not fetched because policy refused"
+never collapses into "fetched and failed".
+
+When a run collects no page evidence at all, the readiness score is reported as
+`null` with `assessed: false` rather than as `0`, because nothing was measured.
+
+### A missing `<nav>` element is not missing navigation
+
+Navigation is judged behaviourally, from several independent signals: nav and
+header landmarks, header and footer link clusters, internal links repeated
+across most pages, and homepage and median internal link counts. The result is
+one of `strong`, `probable`, `weak` or `absent`.
+
+- Navigation that works but carries no landmark produces
+  `missing_nav_landmark` at **low** severity — a machine-readability
+  improvement, not a visitor-facing defect.
+- `weak_navigation` at medium or high severity is reserved for sites where the
+  behavioural signals show navigation genuinely is not there.
+
+A site built entirely from header and footer links with no `<nav>` element
+anywhere is classified as functional navigation.
+
+### Non-page resources do not take part in page-level checks
+
+Crawling turns up URLs that are not navigable pages: component and fragment
+endpoints, JSON APIs, assets, search and utility routes. Left unclassified, one
+such endpoint generates a cluster of findings — no H1, no navigation, no call to
+action, not in the sitemap, little text — that are all really one artefact that
+was never a page.
+
+Each fetched URL is classified as `page`, `component_fragment`, `api_resource`,
+`asset`, `utility_endpoint` or `other_non_page`. The primary signal is document
+shape: a response with no `<html>`, `<head>` or `<title>` is naked markup, not a
+document, regardless of its URL. Path vocabulary and repeated path shapes are
+supporting signals only, and never override a complete document — a real page at
+`/modules/training-courses` stays a page. Non-pages are kept in the evidence
+model with the reason they were excluded, reported under
+`site_context.non_page_resources`, given importance `0`, and left out of every
+page-level denominator.
+
+### Rendering is reported honestly
+
+`pages_rendered: 0` is ambiguous on its own, so the report states what actually
+happened in `site_context.rendering.status`:
+
+`not_requested`, `no_candidates`, `browser_unavailable`, `all_failed`,
+`budget_exhausted`, `partial`, `complete` — each with a human-readable `detail`
+and an `evidence_available` flag.
+
+When no page rendered successfully the audit makes **no** claim about
+JavaScript-injected content, and checks that reason from the absence of text
+(such as thin content) say so in their evidence, carry a benign explanation and
+have their confidence reduced accordingly.
+
 ---
 
 ## Testing
 
 ```bash
-pytest -q                       # 106 tests
+pytest -q                       # 198 tests
 python tests/fixtures/build_fixtures.py   # regenerate the fixture sites
 ```
 
@@ -371,6 +474,8 @@ known defect and a known expected finding:
 | `header_noindex` | `noindex_header_on_important_page` from the X-Robots-Tag response header |
 | `stale_sitemap` | `sitemap_broken_urls` + `sitemap_missing_important_pages` |
 | `non_english` | **no findings** — a healthy German site (generalization control) |
+| `nav_without_landmark` | `missing_nav_landmark` at low severity only; never `weak_navigation` |
+| `component_endpoints` | fragment and API endpoints classified as non-pages and excluded from page checks |
 
 Tests assert the evidence — the check that fired, the journey stage, the metric
 values, the severity band, the presence of mechanism-sound fix steps — not just
@@ -489,6 +594,18 @@ above are implementation choices designed to provide mechanism-sound evidence.
   fall back to structural signals. Wording-based engagement checks are disabled
   outside English rather than guessing, so a non-English site is audited more
   conservatively.
+- **Cross-domain redirects are reported, not followed.** A site that redirects to
+  another registrable domain is recorded with its destination and left
+  un-audited; auditing the content means re-running against that destination.
+  This is deliberate: following arbitrary redirects across domains is how an
+  open redirect becomes server-side request forgery.
+- **Resource classification is heuristic.** A complete HTML document is treated
+  as a page, so a component endpoint that returns a full document with a title
+  will still be audited as a page. The classification and its reasons are
+  published in the report so the decision can be checked.
+- **Navigation is judged from the markup that was retrieved.** Without rendering
+  evidence, a menu injected entirely by client-side JavaScript is not visible to
+  the analysis; the finding states which source was used.
 - **Bot-protected sites.** Sites that block non-browser clients will surface as a
   single access finding rather than a content audit — correctly, since that is
   what an automated retrieval client would also experience.

@@ -96,6 +96,20 @@ class RawPage:
     discovered_from: str | None = None
     truncated: bool = False
     x_robots_tag: str = ""
+    # --- redirect outcome ------------------------------------------------
+    # A safety refusal is not the same event as a failed fetch, and the two must
+    # stay distinguishable all the way into the report. ``fetched`` records
+    # whether a final response body was actually retrieved; ``redirect_outcome``
+    # records why the chain ended.
+    fetched: bool = False
+    redirect_outcome: str = "none"
+    redirect_refusal_reason: str | None = None
+    redirect_refused_target: str | None = None
+    final_attempted_url: str = ""
+
+    @property
+    def final_fetched_url(self) -> str | None:
+        return self.final_url if self.fetched else None
 
 
 @dataclass(slots=True)
@@ -225,19 +239,24 @@ class SiteCrawler:
                      src: str | None) -> RawPage:
         page = RawPage(url=url, final_url=url, status=None, ok=False,
                        depth=depth, discovered_from=src)
+        page.final_attempted_url = url
         if not self.allowed(url):
             page.robots_allowed = False
             page.error = "blocked by robots.txt"
+            page.redirect_outcome = "refused_robots"
             return page
         host = urlsplit(url).hostname or ""
         if not self.cfg.allow_private_networks and resolve_is_private(host):
             page.error = "refused: non-public address"
+            page.redirect_outcome = "refused_non_public_address"
             return page
         t0 = time.perf_counter()
         try:
             await self._get_following_redirects(client, url, page)
         except Exception as exc:
             page.error = f"{type(exc).__name__}: {exc}"
+            if page.redirect_outcome == "none":
+                page.redirect_outcome = "transport_error"
         page.elapsed_ms = int((time.perf_counter() - t0) * 1000)
         return page
 
@@ -262,26 +281,44 @@ class SiteCrawler:
                     location = resp.headers.get("location", "")
                     nxt = absolutize(location, current)
                     if not nxt:
-                        page.error = f"unusable redirect target: {location!r}"
+                        page.redirect_outcome = "bad_location"
+                        page.error = (f"redirect response with an unusable Location "
+                                      f"header: {location!r}")
+                        page.final_attempted_url = current
                         return
                     if nxt in visited:
-                        page.error = f"redirect loop at {nxt}"
+                        page.redirect_outcome = "loop"
+                        page.error = f"redirect loop back to {nxt}"
+                        page.final_attempted_url = nxt
                         return
                     visited.add(nxt)
                     page.redirect_chain.append(current)
                     verdict = self._may_fetch(nxt)
                     if verdict is not None:
-                        page.error = f"redirect refused: {verdict}"
-                        page.robots_allowed = verdict != "blocked by robots.txt"
+                        # The origin server answered correctly; we are declining to
+                        # follow it. That is a policy decision about *us*, not a
+                        # statement about the availability of the site.
+                        page.redirect_outcome = f"refused_{verdict}"
+                        page.redirect_refusal_reason = verdict
+                        page.redirect_refused_target = nxt
+                        page.robots_allowed = verdict != "robots"
+                        page.error = (f"redirect to {nxt} not followed "
+                                      f"({verdict.replace('_', ' ')})")
                         page.final_url = nxt
+                        page.final_attempted_url = nxt
                         return
                     current = nxt
+                    page.redirect_outcome = "followed"
                     continue
                 if resp.is_redirect:
+                    page.redirect_outcome = "limit_exceeded"
                     page.error = (f"redirect limit of {self.cfg.max_redirects} "
                                   "hops exceeded")
+                    page.final_attempted_url = current
                     return
                 page.final_url = normalize_url(current) or current
+                page.final_attempted_url = page.final_url
+                page.fetched = True
                 is_html = (any(t in page.content_type.lower() for t in HTML_TYPES)
                            or not page.content_type)
                 if is_html:
@@ -300,14 +337,18 @@ class SiteCrawler:
                 return
 
     def _may_fetch(self, url: str) -> str | None:
-        """Return a refusal reason, or None when the URL may be fetched."""
+        """Return a stable refusal code, or None when the URL may be fetched.
+
+        Codes (not prose) so that downstream classification never has to match on
+        wording: ``robots``, ``non_public_address``, ``external_domain``.
+        """
         if not self.allowed(url):
-            return "blocked by robots.txt"
+            return "robots"
         host = urlsplit(url).hostname or ""
         if not self.cfg.allow_private_networks and resolve_is_private(host):
-            return "non-public address"
+            return "non_public_address"
         if self.cfg.same_site_only and not same_site(url, self.target.url):
-            return "off-site redirect"
+            return "external_domain"
         return None
 
     @staticmethod

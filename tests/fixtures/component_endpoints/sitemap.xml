@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>http://SITEHOST/</loc></url>
+<url><loc>http://SITEHOST/about</loc></url>
+<url><loc>http://SITEHOST/products</loc></url>
+<url><loc>http://SITEHOST/products/flow-meter</loc></url>
+<url><loc>http://SITEHOST/products/thermal-probe</loc></url>
+<url><loc>http://SITEHOST/services</loc></url>
+<url><loc>http://SITEHOST/pricing</loc></url>
+<url><loc>http://SITEHOST/contact</loc></url>
+<url><loc>http://SITEHOST/faq</loc></url>
+</urlset>

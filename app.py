@@ -1,17 +1,46 @@
 from __future__ import annotations
 
+import io
 import json
-from pathlib import Path
+import secrets
+import threading
+from collections import OrderedDict
 
-from flask import Flask, request, render_template_string, send_file
+from flask import (
+    Flask, Response, request, render_template_string, send_file,
+)
 
 from aira.config import AuditConfig
 from aira.orchestrator import AuditError, run_audit
+from aira.viewer import render_html
 
 
 app = Flask(__name__)
 
-LAST_REPORT = Path("latest_report.json")
+# Completed reports, addressed by an unguessable token.
+#
+# A single shared "latest report" file would hand whichever audit ran most
+# recently to every other visitor, and would write to the working directory on
+# each download - which also fails on a read-only container filesystem. Reports
+# are therefore held in memory, keyed per run, and served from memory.
+MAX_CACHED_REPORTS = 20
+_REPORTS: "OrderedDict[str, dict]" = OrderedDict()
+_REPORTS_LOCK = threading.Lock()
+
+
+def _store_report(report: dict) -> str:
+    """Cache a report and return its download token."""
+    token = secrets.token_urlsafe(16)
+    with _REPORTS_LOCK:
+        _REPORTS[token] = report
+        while len(_REPORTS) > MAX_CACHED_REPORTS:
+            _REPORTS.popitem(last=False)
+    return token
+
+
+def _load_report(token: str) -> dict | None:
+    with _REPORTS_LOCK:
+        return _REPORTS.get(token)
 
 
 HTML = r"""
@@ -1234,17 +1263,17 @@ input {
 
         <div
             class="score-ring"
-            style="--score: {{ ai["overall"] }}"
+            style="--score: {{ ai["overall"] if ai["overall"] is not none else 0 }}"
         >
 
             <div class="score-value">
 
                 <span class="score-number">
-                    {{ ai["overall"] }}
+                    {{ ai["overall"] if ai["overall"] is not none else "n/a" }}
                 </span>
 
                 <span class="score-outof">
-                    out of 100
+                    {{ "out of 100" if ai["overall"] is not none else "not assessed" }}
                 </span>
 
             </div>
@@ -1804,7 +1833,7 @@ input {
 
     <a
         class="action-btn primary"
-        href="/download/json"
+        href="/download/json/{{ report_token }}"
     >
         Download JSON Report
     </a>
@@ -1812,7 +1841,7 @@ input {
 
     <a
         class="action-btn"
-        href="/download/html"
+        href="/download/html/{{ report_token }}"
         target="_blank"
     >
         Open HTML Report
@@ -2053,6 +2082,7 @@ def index():
     report = None
     error = None
     url = ""
+    report_token = None
 
     if request.method == "POST":
 
@@ -2082,14 +2112,7 @@ def index():
                 )
 
 
-                LAST_REPORT.write_text(
-                    json.dumps(
-                        report,
-                        indent=2,
-                        ensure_ascii=False,
-                    ),
-                    encoding="utf-8",
-                )
+                report_token = _store_report(report)
 
 
             except AuditError as exc:
@@ -2109,66 +2132,40 @@ def index():
         report=report,
         error=error,
         url=url,
+        report_token=report_token,
     )
 
 
-@app.route("/download/json")
-def download_json():
+@app.route("/download/json/<token>")
+def download_json(token: str):
+    """Serve one specific report, not whichever ran last."""
+    report = _load_report(token)
+    if report is None:
+        return "Report not found. Run an audit and use the link on that page.", 404
 
-    if not LAST_REPORT.exists():
-
-        return (
-            "No audit report available.",
-            404,
-        )
-
-
+    payload = json.dumps(report, indent=2, ensure_ascii=False).encode("utf-8")
     return send_file(
-        LAST_REPORT,
+        io.BytesIO(payload),
         as_attachment=True,
         download_name="ai-readiness-report.json",
         mimetype="application/json",
     )
 
 
-@app.route("/download/html")
-def download_html():
+@app.route("/download/html/<token>")
+def download_html(token: str):
+    """Render the HTML view in memory - nothing is written to disk."""
+    report = _load_report(token)
+    if report is None:
+        return "Report not found. Run an audit and use the link on that page.", 404
 
-    if not LAST_REPORT.exists():
-
-        return (
-            "No audit report available.",
-            404,
-        )
-
-
-    report = json.loads(
-        LAST_REPORT.read_text(
-            encoding="utf-8"
-        )
-    )
+    return Response(render_html(report), mimetype="text/html")
 
 
-    from aira.viewer import render_html
-
-
-    output = Path(
-        "latest_report.html"
-    )
-
-
-    output.write_text(
-        render_html(report),
-        encoding="utf-8",
-    )
-
-
-    return send_file(
-        output,
-        as_attachment=False,
-        download_name="ai-readiness-report.html",
-        mimetype="text/html",
-    )
+@app.route("/healthz")
+def healthz():
+    """Liveness probe for a container platform."""
+    return {"status": "ok"}, 200
 
 
 if __name__ == "__main__":

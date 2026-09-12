@@ -56,7 +56,9 @@ def config_from_args(args: argparse.Namespace) -> AuditConfig:
 def print_summary(report: dict) -> None:
     s = report["summary"]
     ai = report["ai_readiness"]
-    print(f"\nAI READINESS: {ai['overall']}/100   ({report['site']})")
+    overall = ai["overall"]
+    headline = "not assessed" if overall is None else f"{overall}/100"
+    print(f"\nAI READINESS: {headline}   ({report['site']})")
     for label, value in ai["dimensions"].items():
         shown = "n/a" if value is None else f"{value:>3}"
         print(f"  {label:<24}{shown}")
