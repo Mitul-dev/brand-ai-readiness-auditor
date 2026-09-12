@@ -1,0 +1,394 @@
+{
+  "site": "amazon.com",
+  "audited_at": "2026-09-12T10:25:36+00:00",
+  "summary": {
+    "total_findings": 3,
+    "critical": 0,
+    "high": 2,
+    "medium": 1,
+    "low": 0,
+    "ai_readiness_score": 88,
+    "ai_readiness_assessed": true,
+    "pages_crawled": 19,
+    "pages_rendered": 8,
+    "important_pages": 1,
+    "runtime_seconds": 35.41
+  },
+  "ai_readiness": {
+    "overall": 88,
+    "assessed": true,
+    "dimensions": {
+      "Discoverability": 70,
+      "Content Accessibility": 100,
+      "Entity Clarity": 75,
+      "Fact Consistency": 100,
+      "Freshness": 100,
+      "Engagement": 100
+    },
+    "dimension_keys": {
+      "discoverability": 70,
+      "content_accessibility": 100,
+      "entity_clarity": 75,
+      "fact_consistency": 100,
+      "freshness": 100,
+      "engagement": 100
+    },
+    "explanation": {
+      "Discoverability": "70/100 after 2 finding(s): robots.txt blocks 15 named AI or answer-engine crawler(s) from the entire site (-21); No XML sitemap was found (-8)",
+      "Content Accessibility": "100/100 - no findings in this dimension",
+      "Entity Clarity": "75/100 after 1 finding(s): No Organization or WebSite structured data was found anywhere on the site (-25)",
+      "Fact Consistency": "100/100 - no findings in this dimension",
+      "Freshness": "100/100 - no findings in this dimension",
+      "Engagement": "100/100 - no findings in this dimension"
+    },
+    "applicable": {
+      "discoverability": true,
+      "content_accessibility": true,
+      "entity_clarity": true,
+      "fact_consistency": true,
+      "freshness": true,
+      "engagement": true
+    },
+    "method": "Each dimension starts at 100 and loses severity_penalty x (0.4 + 0.6 x reach) x confidence for every finding attributed to it. The overall score is the weighted mean of the applicable dimensions."
+  },
+  "site_context": {
+    "target_url": "https://www.amazon.com/",
+    "home_status": 200,
+    "robots_present": true,
+    "robots_blocks_site": false,
+    "sitemap_present": false,
+    "sitemap_url_count": 0,
+    "renderer_available": true,
+    "rendering": {
+      "status": "complete",
+      "evidence_available": true,
+      "requested": 8,
+      "attempted": 8,
+      "succeeded": 8,
+      "failed": 0,
+      "error_sample": null,
+      "detail": "8 of 8 page(s) rendered"
+    },
+    "navigation": {
+      "strength": "strong",
+      "pages_considered": 12,
+      "pages_with_nav_landmark": 12,
+      "pages_with_header_landmark": 12,
+      "pages_with_footer_landmark": 1,
+      "pages_with_header_links": 12,
+      "pages_with_footer_links": 1,
+      "repeated_link_count": 98,
+      "repeated_links": [
+        "https://advertising.amazon.com/",
+        "https://affiliate-program.amazon.com/",
+        "https://aws.amazon.com/what-is-cloud-computing?sc_channel=EL&sc_campaign=amazonfooter",
+        "https://developer.amazon.com/",
+        "https://health.amazon.com/health-ai?ref_=nav_cs_health_ai",
+        "https://health.amazon.com/onemedical?ref_=nav_cs_medical_care_vhs",
+        "https://kdp.amazon.com/",
+        "https://logistics.amazon.com/marketing",
+        "https://music.amazon.com/",
+        "https://pharmacy.amazon.com/?nodl=0&ref_=nav_cs_pharmacy",
+        "https://sell.amazon.com/?ld=AZFSSOA_FTSELL-C&ref_=footer_soa",
+        "https://sell.amazon.com/?ld=AZUSSOA-footer-aff&ref_=footer_sell"
+      ],
+      "repeated_link_share": 0.917,
+      "home_internal_links": 0,
+      "median_internal_links": 99,
+      "semantic_landmark_share": 1.0,
+      "signals": [
+        "12/12 pages carry a nav landmark",
+        "98 internal links repeat on at least 7 of 12 pages",
+        "12/12 pages have a header link cluster"
+      ],
+      "evidence_source": "rendered_dom"
+    },
+    "home_outcome": "ok",
+    "home_redirect_target": null,
+    "non_page_resources_excluded": 7,
+    "counts": {
+      "crawled": 19,
+      "pages": 12,
+      "non_page_resources": 7,
+      "html_ok": 12,
+      "important": 1,
+      "rendered": 8
+    },
+    "non_page_resources": [
+      {
+        "url": "https://www.amazon.com/",
+        "kind": "other_non_page",
+        "reasons": [
+          "no successful response body was retrieved"
+        ]
+      },
+      {
+        "url": "https://www.amazon.com/404",
+        "kind": "other_non_page",
+        "reasons": [
+          "no successful response body was retrieved"
+        ]
+      },
+      {
+        "url": "https://www.amazon.com/500",
+        "kind": "other_non_page",
+        "reasons": [
+          "no successful response body was retrieved"
+        ]
+      },
+      {
+        "url": "https://www.amazon.com/ap/signin?openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Fyour-orders%2Forders%3Fref_%3Dnav_orders_first&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.assoc_handle=amzn_retail_yourorders_us&openid.mode=checkid_setup&language=en_US&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0",
+        "kind": "other_non_page",
+        "reasons": [
+          "no successful response body was retrieved"
+        ]
+      },
+      {
+        "url": "https://www.amazon.com/deals?ref_=nav_cs_gb",
+        "kind": "other_non_page",
+        "reasons": [
+          "no successful response body was retrieved"
+        ]
+      },
+      {
+        "url": "https://www.amazon.com/gp/css/homepage.html?ref_=nav_youraccount_btn_b",
+        "kind": "other_non_page",
+        "reasons": [
+          "no successful response body was retrieved"
+        ]
+      },
+      {
+        "url": "https://www.amazon.com/gp/site-directory?ref_=nav_em_js_disabled",
+        "kind": "other_non_page",
+        "reasons": [
+          "no successful response body was retrieved"
+        ]
+      }
+    ],
+    "crawl_budget_exhausted": false,
+    "page_roles": {
+      "other": 11,
+      "non_page": 7,
+      "about": 1
+    },
+    "notes": []
+  },
+  "findings": [
+    {
+      "id": "F-001",
+      "title": "No Organization or WebSite structured data was found anywhere on the site",
+      "severity": "high",
+      "evidence": "0 of 12 crawled HTML pages contain JSON-LD or microdata of an Organization/LocalBusiness/WebSite type. Types observed across the site: none",
+      "suggested_action": {
+        "summary": "Publish one Organization (or LocalBusiness) JSON-LD block site-wide, plus a WebSite block on the homepage.",
+        "priority": "high",
+        "steps": [
+          "Add an Organization node with name, url, logo and a description.",
+          "Add sameAs links to the official profiles the organization controls.",
+          "Include contact details (telephone / email / address) matching the visible contact page.",
+          "Serve the block in the initial HTML on every page, or at least on the homepage and about page."
+        ]
+      },
+      "category": "discoverability",
+      "journey_stage": "represent",
+      "check_id": "missing_organization_identity",
+      "confidence": 0.98,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; sample of 12 pages; consistent across 12/12 pages",
+      "impact": "There is no explicit machine-readable statement of who the site belongs to, so the brand's identity, official name and linked profiles must be inferred from prose - a common cause of entity ambiguity and misattribution.",
+      "priority_score": 0.7311,
+      "priority_reason": "impact 0.80 (severity high) x reach 1.00 x confidence 0.98 x fixability 0.85",
+      "reach": 1.0,
+      "affected_urls": [
+        "https://www.amazon.com/"
+      ],
+      "technical_details": {
+        "url": "https://www.amazon.com/",
+        "observation": "0 of 12 crawled HTML pages contain JSON-LD or microdata of an Organization/LocalBusiness/WebSite type.",
+        "details": "Types observed across the site: none",
+        "metrics": {
+          "pages_with_org_schema": 0,
+          "html_pages": 12,
+          "types_observed": []
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": [],
+      "reasoning": {
+        "root_cause_analysis": "Schema.org JSON-LD markup is absent or fails schema validation. AI engines rely on explicit JSON-LD nodes to ground entity graphs.",
+        "ai_agent_impact": "Inconsistent facts across pages create contradictory training or retrieval signals, leading AI models to misrepresent core brand facts to end users.",
+        "remediation_phase": "Phase 1: Immediate Access & Crawl Recovery (0-7 Days)",
+        "estimated_effort": "low",
+        "cross_finding_dependencies": [
+          "F-002",
+          "F-003"
+        ]
+      },
+      "enhanced_by_reasoning": true
+    },
+    {
+      "id": "F-002",
+      "title": "robots.txt blocks 15 named AI or answer-engine crawler(s) from the entire site",
+      "severity": "high",
+      "evidence": "robots.txt contains a 'Disallow: /' group for: gptbot (OpenAI (training and retrieval)); oai-searchbot (OpenAI search); chatgpt-user (ChatGPT user-initiated fetch); claudebot (Anthropic); claude-user (Claude user-initiated fetch); claude-searchbot (Claude search); perplexitybot (Perplexity); perplexity-user (Perplexity user-initiated fetch). General crawling is not blocked, so these agents are singled out. Read from the per-user-agent groups in robots.txt. Agents that merely fall back to the '*' group are not counted here.",
+      "suggested_action": {
+        "summary": "Confirm whether this block is a deliberate content policy; if AI visibility is the goal, allow the agents you want to be discovered by.",
+        "priority": "high",
+        "steps": [
+          "Decide per agent whether the goal is content protection or AI visibility - these pull in opposite directions.",
+          "For agents you want to be discoverable in, remove the 'Disallow: /' from their group or narrow it to private paths.",
+          "Keep training-only agents blocked separately from retrieval agents if you want citation without training use.",
+          "Re-check robots.txt after deployment with each agent token."
+        ]
+      },
+      "category": "discoverability",
+      "journey_stage": "discover",
+      "check_id": "ai_crawler_blocked",
+      "confidence": 0.82,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; single-page sample; consistent across 1/1 pages",
+      "impact": "These are the crawlers that assistants and answer engines use to reach a site. While they are disallowed, the brand cannot be retrieved, quoted or cited by those systems no matter how good the on-page content is - third-party descriptions are used instead.",
+      "priority_score": 0.656,
+      "priority_reason": "impact 0.80 (severity high) x reach 1.00 x confidence 0.82 x fixability 1.00",
+      "reach": 1.0,
+      "affected_urls": [
+        "https://www.amazon.com/robots.txt"
+      ],
+      "technical_details": {
+        "url": "https://www.amazon.com/robots.txt",
+        "observation": "robots.txt contains a 'Disallow: /' group for: gptbot (OpenAI (training and retrieval)); oai-searchbot (OpenAI search); chatgpt-user (ChatGPT user-initiated fetch); claudebot (Anthropic); claude-user (Claude user-initiated fetch); claude-searchbot (Claude search); perplexitybot (Perplexity); perplexity-user (Perplexity user-initiated fetch). General crawling is not blocked, so these agents are singled out.",
+        "details": "Read from the per-user-agent groups in robots.txt. Agents that merely fall back to the '*' group are not counted here.",
+        "metrics": {
+          "blocked_agents": [
+            "bytespider",
+            "ccbot",
+            "chatgpt-user",
+            "claude-searchbot",
+            "claude-user",
+            "claudebot",
+            "cohere-ai",
+            "diffbot",
+            "google-extended",
+            "gptbot",
+            "meta-externalagent",
+            "oai-searchbot",
+            "perplexity-user",
+            "perplexitybot",
+            "youbot"
+          ],
+          "blocked_count": 15,
+          "partially_restricted_agents": []
+        }
+      },
+      "possible_benign_explanations": [
+        "Blocking these agents is often a deliberate content-licensing or copyright decision, in which case this is working as intended and should be recorded as accepted rather than fixed.",
+        "Some organisations block training crawlers while allowing retrieval crawlers; check the finding's agent list before acting."
+      ],
+      "merged_from_checks": [],
+      "reasoning": {
+        "root_cause_analysis": "Explicit disallow directives in robots.txt restrict specialized AI bot user-agents: bytespider, ccbot, chatgpt-user, claude-searchbot, claude-user, claudebot, cohere-ai, diffbot, google-extended, gptbot, meta-externalagent, oai-searchbot, perplexity-user, perplexitybot, youbot.",
+        "ai_agent_impact": "Autonomous crawlers and search agents cannot index or retrieve site resources, preventing the brand from appearing in AI knowledge bases or live retrieval queries.",
+        "remediation_phase": "Phase 1: Immediate Access & Crawl Recovery (0-7 Days)",
+        "estimated_effort": "low",
+        "cross_finding_dependencies": [
+          "F-001",
+          "F-003"
+        ]
+      },
+      "enhanced_by_reasoning": true
+    },
+    {
+      "id": "F-003",
+      "title": "No XML sitemap was found",
+      "severity": "medium",
+      "evidence": "Neither /sitemap.xml nor any Sitemap: directive in robots.txt returned a usable sitemap. 12 HTML pages were reachable by link following.",
+      "suggested_action": {
+        "summary": "Publish an XML sitemap and reference it from robots.txt.",
+        "priority": "medium",
+        "steps": [
+          "Generate a sitemap listing canonical URLs of the public pages.",
+          "Serve it at /sitemap.xml with HTTP 200 and content-type application/xml.",
+          "Add a 'Sitemap: https://<host>/sitemap.xml' line to robots.txt."
+        ]
+      },
+      "category": "discoverability",
+      "journey_stage": "discover",
+      "check_id": "sitemap_missing",
+      "confidence": 0.9,
+      "confidence_reason": "deterministic rule on measured values; direct DOM/HTTP observation; sample of 12 pages",
+      "impact": "Without a sitemap, automated systems must rely entirely on link discovery, so pages that are weakly linked may never be reached.",
+      "priority_score": 0.2901,
+      "priority_reason": "impact 0.50 (severity medium) x reach 0.50 x confidence 0.90 x fixability 0.90",
+      "reach": 0.5,
+      "affected_urls": [
+        "https://www.amazon.com/"
+      ],
+      "technical_details": {
+        "url": "https://www.amazon.com/",
+        "observation": "Neither /sitemap.xml nor any Sitemap: directive in robots.txt returned a usable sitemap.",
+        "details": "12 HTML pages were reachable by link following.",
+        "metrics": {
+          "sitemap_locations_tried": [
+            "/sitemap.xml"
+          ],
+          "html_pages_crawled": 12
+        }
+      },
+      "possible_benign_explanations": [],
+      "merged_from_checks": [],
+      "reasoning": {
+        "root_cause_analysis": "Observed measurement 'Neither /sitemap.xml nor any Sitemap: directive in robots.txt returned a usable sitemap.' deviates from AI indexing and extraction standards.",
+        "ai_agent_impact": "Autonomous crawlers and search agents cannot index or retrieve site resources, preventing the brand from appearing in AI knowledge bases or live retrieval queries.",
+        "remediation_phase": "Phase 2: Structured Knowledge & Semantic Architecture (7-21 Days)",
+        "estimated_effort": "medium",
+        "cross_finding_dependencies": [
+          "F-001",
+          "F-002"
+        ]
+      },
+      "enhanced_by_reasoning": true
+    }
+  ],
+  "strategic_reasoning": {
+    "executive_summary": "Audit analyzed 19 page(s) (8 rendered) on amazon.com. Identified 3 total finding(s): 0 critical, 2 high, 1 medium, and 0 low. The primary architectural constraint is concentrated in the 'DISCOVER' stage. Executing the phased remediation plan will systematically upgrade AI discoverability and extraction fidelity.",
+    "primary_bottleneck_stage": "discover",
+    "strategic_themes": [
+      {
+        "theme": "Crawler Ingestion & Access Guardrails",
+        "diagnosis": "Crawlers face barriers reaching content. 2 discovery and 0 access issues were identified.",
+        "strategic_recommendation": "Ensure robots.txt allows AI user-agents, provide a clean XML sitemap, and serve critical content in static HTML rather than client-side execution."
+      },
+      {
+        "theme": "Entity Authority & Contextual Retention",
+        "diagnosis": "Cross-page entity consistency or external authority corroboration requires strengthening.",
+        "strategic_recommendation": "Link official social/corporate profiles via sameAs properties and provide clear navigation trails and calls-to-action on interior landing pages."
+      }
+    ],
+    "remediation_roadmap": [
+      {
+        "phase": "Phase 1: Immediate Unblocking (Days 0-7)",
+        "objective": "Eliminate crawl blockers, HTTP errors, and indexing restrictions.",
+        "actions": [
+          "Fix No Organization or WebSite structured data was found anywhere on the site (F-001)",
+          "Fix robots.txt blocks 15 named AI or answer-engine crawler(s) from the entire site (F-002)"
+        ]
+      },
+      {
+        "phase": "Phase 2: Semantic Graph & Structured Data (Days 7-21)",
+        "objective": "Publish valid Schema.org entities and resolve content depth/JS dependency.",
+        "actions": [
+          "Remediate No XML sitemap was found (F-003)"
+        ]
+      },
+      {
+        "phase": "Phase 3: Authority, Corroboration & Next Steps (Days 21-45)",
+        "objective": "Strengthen external entity corroboration and interior user/agent journey continuity.",
+        "actions": [
+          "Audit outbound entity citations and navigation paths."
+        ]
+      }
+    ],
+    "findings_by_stage_count": {
+      "represent": 1,
+      "discover": 2
+    }
+  }
+}

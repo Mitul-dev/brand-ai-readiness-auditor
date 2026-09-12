@@ -44,2035 +44,513 @@ def _load_report(token: str) -> dict | None:
 
 
 HTML = r"""
-<!doctype html>
-<html lang="en">
-
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>AI Website Readiness Auditor</title>
-
-<style>
-
-:root {
-    --bg: #f4f5f7;
-    --card: #ffffff;
-    --card2: #fafafa;
-    --text: #171717;
-    --muted: #707070;
-    --border: #dedede;
-    --accent: #5b5cf0;
-    --accent2: #7c3aed;
-    --danger: #c62828;
-    --shadow: 0 10px 30px rgba(0, 0, 0, .06);
-}
-
-[data-theme="dark"] {
-    --bg: #101114;
-    --card: #191b20;
-    --card2: #15171b;
-    --text: #f3f4f6;
-    --muted: #9da1aa;
-    --border: #2b2e35;
-    --accent: #8586ff;
-    --accent2: #a78bfa;
-    --danger: #ff6b6b;
-    --shadow: 0 12px 35px rgba(0, 0, 0, .25);
-}
-
-* {
-    box-sizing: border-box;
-}
-
-html {
-    scroll-behavior: smooth;
-}
-
-body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-
-    font-family:
-        Inter,
-        ui-sans-serif,
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
-
-    transition:
-        background .2s ease,
-        color .2s ease;
-}
-
-button,
-input {
-    font: inherit;
-}
-
-
-/* =========================
-   TOP BAR
-========================= */
-
-.topbar {
-
-    height: 70px;
-
-    border-bottom: 1px solid var(--border);
-
-    background: var(--card);
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: space-between;
-
-    padding: 0 28px;
-
-    position: sticky;
-
-    top: 0;
-
-    z-index: 20;
-}
-
-
-.brand {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 12px;
-
-    font-weight: 700;
-}
-
-
-.brand-mark {
-
-    width: 34px;
-
-    height: 34px;
-
-    border-radius: 9px;
-
-    display: grid;
-
-    place-items: center;
-
-    color: white;
-
-    background:
-        linear-gradient(
-            135deg,
-            var(--accent),
-            var(--accent2)
-        );
-
-    font-weight: 800;
-}
-
-
-.theme-btn {
-
-    width: 40px;
-
-    height: 40px;
-
-    border: 1px solid var(--border);
-
-    background: var(--card2);
-
-    color: var(--text);
-
-    border-radius: 10px;
-
-    cursor: pointer;
-
-    display: grid;
-
-    place-items: center;
-
-    font-size: 18px;
-
-    transition:
-        background .2s ease,
-        transform .15s ease;
-}
-
-
-.theme-btn:hover {
-
-    transform: scale(1.05);
-
-}
-
-
-/* =========================
-   MAIN
-========================= */
-
-.container {
-
-    max-width: 1180px;
-
-    margin: auto;
-
-    padding: 45px 22px 80px;
-}
-
-
-.hero {
-
-    margin-bottom: 30px;
-}
-
-
-.hero h1 {
-
-    font-size: 38px;
-
-    line-height: 1.1;
-
-    margin: 0 0 10px;
-
-    letter-spacing: -1.5px;
-}
-
-
-.hero p {
-
-    color: var(--muted);
-
-    max-width: 700px;
-
-    margin: 0;
-
-    font-size: 16px;
-}
-
-
-/* =========================
-   AUDIT FORM
-========================= */
-
-.audit-form {
-
-    background: var(--card);
-
-    border: 1px solid var(--border);
-
-    border-radius: 16px;
-
-    padding: 20px;
-
-    box-shadow: var(--shadow);
-}
-
-
-.audit-form label {
-
-    display: block;
-
-    font-size: 13px;
-
-    font-weight: 700;
-
-    margin-bottom: 8px;
-}
-
-
-.form-row {
-
-    display: flex;
-
-    gap: 10px;
-}
-
-
-.url-input {
-
-    flex: 1;
-
-    min-width: 0;
-
-    padding: 14px 15px;
-
-    border: 1px solid var(--border);
-
-    border-radius: 10px;
-
-    background: var(--card2);
-
-    color: var(--text);
-
-    outline: none;
-}
-
-
-.url-input:focus {
-
-    border-color: var(--accent);
-}
-
-
-.audit-btn {
-
-    border: 0;
-
-    border-radius: 10px;
-
-    padding: 0 25px;
-
-    color: white;
-
-    background: var(--accent);
-
-    font-weight: 700;
-
-    cursor: pointer;
-
-    transition:
-        opacity .2s ease,
-        transform .15s ease;
-}
-
-
-.audit-btn:hover {
-
-    opacity: .9;
-
-    transform: translateY(-1px);
-}
-
-
-/* =========================
-   ERROR
-========================= */
-
-.error {
-
-    margin-top: 15px;
-
-    padding: 13px 15px;
-
-    border-radius: 10px;
-
-    background: rgba(198, 40, 40, .10);
-
-    border: 1px solid rgba(198, 40, 40, .35);
-
-    color: var(--danger);
-}
-
-
-/* =========================
-   DASHBOARD
-========================= */
-
-.dashboard {
-
-    margin-top: 28px;
-}
-
-
-.section-title {
-
-    margin: 30px 0 13px;
-
-    font-size: 19px;
-}
-
-
-.card {
-
-    background: var(--card);
-
-    border: 1px solid var(--border);
-
-    border-radius: 16px;
-
-    box-shadow: var(--shadow);
-}
-
-
-/* =========================
-   SCORE
-========================= */
-
-.score-card {
-
-    padding: 28px;
-}
-
-
-.score-layout {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 45px;
-}
-
-
-.score-ring {
-
-    width: 155px;
-
-    height: 155px;
-
-    border-radius: 50%;
-
-    display: grid;
-
-    place-items: center;
-
-    flex-shrink: 0;
-
-    background:
-        conic-gradient(
-            var(--accent)
-            calc(var(--score) * 1%),
-            var(--border) 0
-        );
-
-    position: relative;
-}
-
-
-.score-ring::before {
-
-    content: "";
-
-    position: absolute;
-
-    inset: 11px;
-
-    border-radius: 50%;
-
-    background: var(--card);
-}
-
-
-.score-value {
-
-    position: relative;
-
-    text-align: center;
-}
-
-
-.score-number {
-
-    display: block;
-
-    font-size: 42px;
-
-    line-height: 1;
-
-    font-weight: 800;
-}
-
-
-.score-outof {
-
-    color: var(--muted);
-
-    font-size: 12px;
-}
-
-
-.dimensions {
-
-    flex: 1;
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(2, 1fr);
-
-    gap: 15px 25px;
-}
-
-
-.dimension {
-
-    font-size: 13px;
-}
-
-
-.dimension-head {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    margin-bottom: 5px;
-}
-
-
-.progress {
-
-    height: 7px;
-
-    border-radius: 99px;
-
-    overflow: hidden;
-
-    background: var(--border);
-}
-
-
-.progress i {
-
-    display: block;
-
-    height: 100%;
-
-    border-radius: inherit;
-
-    background:
-        linear-gradient(
-            90deg,
-            var(--accent),
-            var(--accent2)
-        );
-}
-
-
-/* =========================
-   STATS
-========================= */
-
-.stats {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(4, 1fr);
-
-    gap: 12px;
-
-    margin-top: 18px;
-}
-
-
-.stat {
-
-    padding: 16px;
-
-    background: var(--card);
-
-    border: 1px solid var(--border);
-
-    border-radius: 12px;
-}
-
-
-.stat-value {
-
-    font-size: 24px;
-
-    font-weight: 750;
-}
-
-
-.stat-label {
-
-    color: var(--muted);
-
-    font-size: 12px;
-
-    margin-top: 3px;
-}
-
-
-/* =========================
-   JOURNEY
-========================= */
-
-.journey {
-
-    padding: 24px;
-
-    overflow-x: auto;
-}
-
-
-.journey-track {
-
-    min-width: 720px;
-
-    display: flex;
-
-    align-items: center;
-}
-
-
-.stage {
-
-    flex: 1;
-
-    text-align: center;
-
-    position: relative;
-}
-
-
-.stage:not(:last-child)::after {
-
-    content: "";
-
-    position: absolute;
-
-    top: 18px;
-
-    left: 58%;
-
-    right: -42%;
-
-    height: 2px;
-
-    background: var(--border);
-}
-
-
-.stage-dot {
-
-    width: 36px;
-
-    height: 36px;
-
-    margin: auto;
-
-    border-radius: 50%;
-
-    display: grid;
-
-    place-items: center;
-
-    background: var(--card2);
-
-    border: 2px solid var(--accent);
-
-    position: relative;
-
-    z-index: 2;
-
-    font-size: 12px;
-
-    font-weight: 800;
-}
-
-
-.stage-name {
-
-    margin-top: 8px;
-
-    font-size: 11px;
-
-    font-weight: 700;
-
-    letter-spacing: .04em;
-}
-
-
-.stage-desc {
-
-    color: var(--muted);
-
-    font-size: 10px;
-}
-
-
-/* =========================
-   FINDINGS
-========================= */
-
-.finding-tools {
-
-    display: flex;
-
-    gap: 10px;
-
-    margin-bottom: 13px;
-
-    flex-wrap: wrap;
-}
-
-
-.finding-search {
-
-    flex: 1;
-
-    min-width: 220px;
-
-    padding: 11px 13px;
-
-    border: 1px solid var(--border);
-
-    border-radius: 9px;
-
-    background: var(--card);
-
-    color: var(--text);
-
-    outline: none;
-}
-
-
-.finding-search:focus {
-
-    border-color: var(--accent);
-}
-
-
-.filter-btn {
-
-    padding: 10px 13px;
-
-    border-radius: 9px;
-
-    border: 1px solid var(--border);
-
-    background: var(--card);
-
-    color: var(--text);
-
-    cursor: pointer;
-}
-
-
-.filter-btn.active {
-
-    background: var(--accent);
-
-    color: white;
-
-    border-color: var(--accent);
-}
-
-
-.finding {
-
-    margin-bottom: 10px;
-
-    overflow: hidden;
-}
-
-
-.finding summary {
-
-    padding: 17px;
-
-    cursor: pointer;
-
-    list-style: none;
-}
-
-
-.finding summary::-webkit-details-marker {
-
-    display: none;
-}
-
-
-.finding-title {
-
-    display: flex;
-
-    gap: 9px;
-
-    align-items: flex-start;
-}
-
-
-.severity {
-
-    color: white;
-
-    padding: 3px 7px;
-
-    border-radius: 5px;
-
-    font-size: 10px;
-
-    font-weight: 800;
-
-    text-transform: uppercase;
-
-    flex-shrink: 0;
-}
-
-
-.critical {
-
-    background: #b3261e;
-}
-
-
-.high {
-
-    background: #c2410c;
-}
-
-
-.medium {
-
-    background: #a16207;
-}
-
-
-.low {
-
-    background: #3f6212;
-}
-
-
-.finding-name {
-
-    font-weight: 650;
-}
-
-
-.finding-meta {
-
-    margin-top: 5px;
-
-    color: var(--muted);
-
-    font-size: 11px;
-}
-
-
-.finding-body {
-
-    border-top: 1px solid var(--border);
-
-    padding: 4px 18px 20px;
-}
-
-
-.finding-body h4 {
-
-    margin: 16px 0 5px;
-
-    color: var(--muted);
-
-    text-transform: uppercase;
-
-    letter-spacing: .05em;
-
-    font-size: 11px;
-}
-
-
-.finding-body p {
-
-    margin: 0;
-
-    line-height: 1.55;
-
-    font-size: 14px;
-}
-
-
-.finding-body ol {
-
-    margin-top: 7px;
-
-    padding-left: 22px;
-
-    font-size: 14px;
-}
-
-
-.urls {
-
-    word-break: break-all;
-
-    color: var(--muted);
-
-    font-size: 12px;
-}
-
-
-/* =========================
-   AGENT REASONING & ROADMAP
-========================= */
-
-.reasoning-badge {
-    display: inline-block;
-    padding: 2px 7px;
-    border-radius: 6px;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: white;
-}
-
-.reasoning-card {
-    padding: 24px;
-}
-
-.reasoning-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 20px;
-    flex-wrap: wrap;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 18px;
-}
-
-.bottleneck-badge {
-    background: var(--card2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 14px;
-    text-align: right;
-    min-width: 140px;
-}
-
-.strategic-themes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 14px;
-}
-
-.theme-card {
-    background: var(--card2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-}
-
-.roadmap-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 14px;
-}
-
-.phase-card {
-    background: var(--card2);
-    border: 1px solid var(--border);
-    border-top: 3px solid var(--accent);
-    border-radius: 10px;
-    padding: 14px;
-}
-
-.phase-title {
-    font-weight: 750;
-    font-size: 13px;
-    margin-bottom: 4px;
-}
-
-.phase-obj {
-    color: var(--muted);
-    font-size: 11px;
-    margin-bottom: 10px;
-    line-height: 1.4;
-}
-
-.phase-actions {
-    margin: 0;
-    padding-left: 18px;
-    font-size: 12px;
-    line-height: 1.5;
-}
-
-.reasoning-tag {
-    display: inline-block;
-    padding: 3px 8px;
-    background: var(--card2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 11px;
-    color: var(--muted);
-}
-
-
-/* =========================
-   ACTIONS
-========================= */
-
-.actions {
-
-    display: flex;
-
-    gap: 10px;
-
-    flex-wrap: wrap;
-
-    margin-top: 18px;
-}
-
-
-.action-btn {
-
-    display: inline-block;
-
-    padding: 10px 15px;
-
-    border-radius: 9px;
-
-    border: 1px solid var(--border);
-
-    background: var(--card);
-
-    color: var(--text);
-
-    text-decoration: none;
-
-    font-size: 13px;
-
-    font-weight: 650;
-}
-
-
-.action-btn.primary {
-
-    background: var(--accent);
-
-    border-color: var(--accent);
-
-    color: white;
-}
-
-
-/* =========================
-   FOOTER
-========================= */
-
-.footer {
-
-    text-align: center;
-
-    color: var(--muted);
-
-    font-size: 11px;
-
-    margin-top: 45px;
-}
-
-
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media(max-width: 800px) {
-
-    .score-layout {
-
-        flex-direction: column;
-
-        align-items: stretch;
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Website Readiness Auditor | Enterprise LLM &amp; Agentic SEO Intelligence</title>
+<!-- Tailwind CSS v3 with forms & container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            },
+            surface: {
+              base: '#0B0F17',
+              panel: '#111726',
+              elevated: '#161F33',
+              border: '#1E293B',
+              borderSubtle: '#293548'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'SF Mono', 'Menlo', 'Consolas', 'monospace']
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'spin-slow': 'spin 8s linear infinite',
+            'scanline': 'scan 2.5s ease-in-out infinite alternate',
+          },
+          keyframes: {
+            scan: {
+              '0%': { transform: 'translateY(-100%)' },
+              '100%': { transform: 'translateY(100%)' },
+            }
+          }
+        }
+      }
+    };
+  </script>
+<!-- Google Font Preconnect & Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style data-purpose="custom-enhancements">
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0B0F17;
+      color: #E2E8F0;
     }
-
-    .score-ring {
-
-        margin: auto;
+    .font-mono-digits {
+      font-family: 'JetBrains Mono', monospace;
+      font-feature-settings: "tnum" 1, "zero" 1;
     }
-
-    .dimensions {
-
-        grid-template-columns: 1fr;
+    .mesh-gradient-bg {
+      background-image: 
+        radial-gradient(at 15% 15%, rgba(99, 102, 241, 0.12) 0px, transparent 45%),
+        radial-gradient(at 85% 20%, rgba(139, 92, 246, 0.10) 0px, transparent 40%),
+        radial-gradient(at 50% 60%, rgba(16, 185, 129, 0.04) 0px, transparent 50%);
     }
-
-    .stats {
-
-        grid-template-columns:
-            repeat(2, 1fr);
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
     }
-}
-
-
-@media(max-width: 600px) {
-
-    .topbar {
-
-        padding: 0 15px;
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #0F172A;
     }
-
-    .container {
-
-        padding:
-            30px
-            14px
-            60px;
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
     }
-
-    .hero h1 {
-
-        font-size: 30px;
+    .glow-indigo {
+      box-shadow: 0 0 25px -4px rgba(99, 102, 241, 0.35);
     }
-
-    .form-row {
-
-        flex-direction: column;
+    .glass-card {
+      background: rgba(17, 23, 38, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
-
-    .audit-btn {
-
-        padding: 13px;
-    }
-
-    .stats {
-
-        grid-template-columns:
-            1fr 1fr;
-    }
-}
-
-</style>
+  </style>
 </head>
-
-
-<body>
-
-
-<header class="topbar">
-
-    <div class="brand">
-
-        <div class="brand-mark">
-            A
-        </div>
-
-        <span>
+<body class="min-h-screen mesh-gradient-bg antialiased selection:bg-indigo-500 selection:text-white flex flex-col justify-between">
+<!-- BEGIN: TopNavigation -->
+<header class="w-full border-b border-surface-border/80 sticky top-0 z-50 bg-[#0B0F17]/90 backdrop-blur-md">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+<!-- Brand & Title -->
+<div class="flex items-center gap-3.5">
+<div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 text-white font-black text-lg shadow-lg shadow-indigo-600/30">
+<span class="tracking-tight">A</span>
+<!-- Subtle corner tech notch -->
+<div class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-purple-300 rounded-full animate-ping opacity-60"></div>
+<div class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-purple-400 rounded-full"></div>
+</div>
+<div class="flex items-center gap-2">
+<a class="font-semibold text-white tracking-tight text-base hover:text-indigo-300 transition-colors" href="#">
             AI Website Readiness Auditor
-        </span>
-
-    </div>
-
-
-    <button
-        class="theme-btn"
-        onclick="toggleTheme()"
-        id="themeButton"
-        aria-label="Toggle dark mode"
-        title="Toggle theme"
-    >
-        ⏾
-    
-    </button>
-
+          </a>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="hidden md:flex items-center gap-7 text-xs font-medium text-slate-300">
+</nav>
+<!-- System Health & Actions -->
+<div class="flex items-center gap-4">
+<!-- Theme & Control Icon Button -->
+<button aria-label="Settings and options" class="w-9 h-9 flex items-center justify-center rounded-lg bg-surface-panel hover:bg-surface-elevated border border-surface-border text-slate-300 hover:text-white transition-colors" type="button" onclick="toggleTheme()">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</div>
 </header>
-
-
-
-<main class="container">
-
-
-<section class="hero">
-
-    <h1>
+<!-- END: TopNavigation -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-10 flex flex-col gap-8 justify-center main-container">
+<!-- BEGIN: HeroHeaderSection -->
+<section class="text-center max-w-3xl mx-auto space-y-3" data-purpose="hero-header">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-medium mb-1">
+<svg class="w-3.5 h-3.5 text-indigo-400 animate-spin-slow" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Generative Engine Optimization (GEO) &amp; Agent Readiness</span>
+</div>
+<h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
         AI Website Readiness Auditor
-    </h1>
-
-    <p>
-        Measure whether a website can be discovered, accessed,
-        understood, extracted, trusted and represented by AI systems.
-    </p>
-
+      </h1>
+<p class="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
+        Measure whether a website can be discovered, accessed, understood, extracted, trusted and represented by modern AI systems &amp; autonomous agents.
+      </p>
 </section>
-
-
-
-<form
-    class="audit-form"
-    method="post"
->
-
-    <label for="url">
-        Website URL
-    </label>
-
-
-    <div class="form-row">
-
-        <input
-            id="url"
-            class="url-input"
-            name="url"
-            type="url"
-            placeholder="https://www.example.com"
-            value="{{ url }}"
-            required
-        >
-
-
-        <button
-            class="audit-btn"
-            type="submit"
-        >
-            Audit Website
-        </button>
-
-    </div>
-
+<!-- END: HeroHeaderSection -->
+<!-- BEGIN: AuditInputBox -->
+<section class="w-full" data-purpose="audit-input-form">
+<div class="glass-card rounded-2xl p-3 sm:p-4 shadow-2xl relative group focus-within:border-indigo-500/60 transition-all duration-300">
+<form class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 audit-form" method="POST">
+<!-- Protocol & Target URL Field -->
+<div class="relative flex-1 flex items-center bg-slate-950/70 rounded-xl border border-slate-800 group-hover:border-slate-700/90 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all px-3 py-2.5">
+<!-- Globe Icon -->
+<div class="text-slate-500 mr-2.5 flex items-center">
+<svg class="w-5 h-5 text-indigo-400/90" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<!-- Protocol Badge -->
+<span class="text-xs font-mono font-medium text-slate-400 bg-slate-800/80 px-2 py-1 rounded mr-2 hidden sm:inline-block border border-slate-700/50">
+              HTTPS
+            </span>
+<!-- Actual Input Element -->
+<input aria-label="Target Website URL" name="url" class="bg-transparent text-sm sm:text-base font-mono text-white placeholder-slate-500 focus:outline-none w-full border-none p-0 focus:ring-0 selection:bg-indigo-600 url-input" placeholder="https://example.com" type="url" value="{{ url }}" required/>
+<!-- Clear/Action Button -->
+<button aria-label="Clear input" class="text-slate-500 hover:text-slate-300 p-1" type="button" onclick="document.querySelector('.url-input').value=''">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+<!-- Submit / Running Audit Button -->
+<button class="audit-btn flex items-center justify-center gap-2.5 px-7 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-semibold text-sm transition-all duration-200 glow-indigo shrink-0 active:scale-[0.98]" id="audit-action-button" type="submit">
+<svg class="animate-spin h-4 w-4 text-white hidden spinner-icon" fill="none" viewbox="0 0 24 24">
+<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+<path class="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path>
+</svg>
+<span class="btn-text">Audit Website</span>
+</button>
 </form>
-
-
+</div>
+</section>
+<!-- END: AuditInputBox -->
 
 {% if error %}
-
-<div class="error">
-
-    {{ error }}
-
-</div>
-
+<section class="w-full error-section">
+    <div class="glass-card rounded-2xl p-5 border border-red-500/30 bg-red-900/10">
+        <div class="flex items-start gap-3 text-red-400">
+            <svg class="w-5 h-5 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-sm">{{ error }}</p>
+        </div>
+    </div>
+</section>
 {% endif %}
 
-
+<!-- BEGIN: LiveAuditConsole -->
+<section class="w-full" id="loadingPanel" style="display: none;" aria-live="polite">
+<div class="glass-card rounded-2xl border border-surface-border overflow-hidden shadow-2xl relative">
+<!-- Top Status Subheader Bar -->
+<div class="bg-surface-elevated/80 border-b border-surface-border px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+<!-- Current Target & Pulse -->
+<div class="flex items-center gap-2.5">
+<div class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
+</div>
+<div class="flex items-center gap-1.5 font-mono">
+<span class="text-slate-400 uppercase tracking-widest text-[11px]">AUDITING</span>
+<span class="text-white font-semibold tracking-wide" id="loadingDomain"></span>
+</div>
+</div>
+</div>
+<!-- Center Counter Display -->
+<div class="p-8 sm:p-10 flex flex-col items-center justify-center text-center relative overflow-hidden bg-gradient-to-b from-[#111726]/60 to-[#0B0F17]/90">
+<!-- Ambient Glow behind digital timer -->
+<div class="absolute w-72 h-36 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none -top-6"></div>
+<p class="text-xs uppercase tracking-[0.25em] text-slate-400 font-semibold mb-2 flex items-center justify-center gap-1.5 w-full">
+<svg class="w-3.5 h-3.5 text-indigo-400 animate-pulse" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+            Elapsed Execution Time
+          </p>
+<!-- Large High-Fidelity Monospace Timer -->
+<div id="loadingTimer" class="font-mono-digits text-6xl sm:text-7xl font-bold tracking-tight text-white mb-2 filter drop-shadow-[0_4px_16px_rgba(99,102,241,0.3)]">
+            00:00
+          </div>
+<!-- Current Stage Status with Animated Ellipsis -->
+<div class="flex items-center justify-center gap-2 text-indigo-400 font-medium text-sm sm:text-base mt-2 w-full">
+<span>Crawling and analyzing website</span>
+<div class="flex gap-1 items-center">
+<span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:0.2s]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:0.4s]"></span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: LiveAuditConsole -->
 
 {% if report %}
-
 {% set ai = report["ai_readiness"] %}
 {% set summary = report["summary"] %}
 
+<!-- BEGIN: Results Dashboard -->
+<section class="w-full dashboard-section">
+    <div class="text-center mb-8">
+        <p class="text-slate-400 text-sm">
+            Audit completed in <span class="font-mono text-indigo-400 font-semibold">{{ "%02d:%02d"|format((summary["runtime_seconds"]|int) // 60, (summary["runtime_seconds"]|int) % 60) }}</span>
+        </p>
+    </div>
 
-
-<section class="dashboard">
-
-
-<!-- =========================
-     SCORE
-========================= -->
-
-<h2 class="section-title">
-    AI Readiness
-</h2>
-
-
-<div class="card score-card">
-
-
-    <div class="score-layout">
-
-
-        <div
-            class="score-ring"
-            style="--score: {{ ai["overall"] if ai["overall"] is not none else 0 }}"
-        >
-
-            <div class="score-value">
-
-                <span class="score-number">
-                    {{ ai["overall"] if ai["overall"] is not none else "n/a" }}
-                </span>
-
-                <span class="score-outof">
-                    {{ "out of 100" if ai["overall"] is not none else "not assessed" }}
-                </span>
-
-            </div>
-
-        </div>
-
-
-
-        <div class="dimensions">
-
-
-        {% for name, value in ai["dimensions"].items() %}
-
-
-            <div class="dimension">
-
-
-                <div class="dimension-head">
-
-                    <span>
-                        {{ name }}
-                    </span>
-
-
-                    <b>
-
-                    {% if value is none %}
-
-                        n/a
-
-                    {% else %}
-
-                        {{ value }}
-
-                    {% endif %}
-
-                    </b>
-
+    <!-- Overall Score Card -->
+    <div class="glass-card rounded-2xl p-6 sm:p-8 mb-8 border border-surface-border">
+        <div class="flex flex-col md:flex-row items-center gap-10">
+            <!-- Score Ring (Vanilla CSS equivalent converted to Tailwind) -->
+            <div class="relative w-40 h-40 rounded-full flex items-center justify-center shrink-0"
+                 style="background: conic-gradient(#6366f1 {{ ai['overall'] if ai['overall'] is not none else 0 }}%, #1E293B 0);">
+                <div class="absolute inset-2 rounded-full bg-surface-panel flex flex-col items-center justify-center">
+                    <span class="text-4xl font-bold text-white">{{ ai["overall"] if ai["overall"] is not none else "n/a" }}</span>
+                    <span class="text-xs text-slate-400">out of 100</span>
                 </div>
+            </div>
 
-
-                <div class="progress">
-
-                {% if value is not none %}
-
-                    <i
-                        style="width: {{ value }}%"
-                    ></i>
-
-                {% endif %}
-
+            <!-- Dimensions -->
+            <div class="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {% for name, value in ai["dimensions"].items() %}
+                <div class="bg-slate-900/50 rounded-lg p-4 border border-slate-800">
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-slate-300 font-medium">{{ name }}</span>
+                        <span class="text-indigo-400 font-bold">{% if value is none %}n/a{% else %}{{ value }}{% endif %}</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                        {% if value is not none %}
+                        <div class="h-full bg-indigo-500 rounded-full" style="width: {{ value }}%;"></div>
+                        {% endif %}
+                    </div>
                 </div>
-
-
-            </div>
-
-
-        {% endfor %}
-
-
-        </div>
-
-
-    </div>
-
-
-</div>
-
-
-
-<!-- =========================
-     STATS
-========================= -->
-
-<div class="stats">
-
-
-    <div class="stat">
-
-        <div class="stat-value">
-            {{ summary["pages_crawled"] }}
-        </div>
-
-        <div class="stat-label">
-            Pages crawled
-        </div>
-
-    </div>
-
-
-
-    <div class="stat">
-
-        <div class="stat-value">
-            {{ summary["pages_rendered"] }}
-        </div>
-
-        <div class="stat-label">
-            Pages rendered
-        </div>
-
-    </div>
-
-
-
-    <div class="stat">
-
-        <div class="stat-value">
-            {{ summary["total_findings"] }}
-        </div>
-
-        <div class="stat-label">
-            Findings
-        </div>
-
-    </div>
-
-
-
-    <div class="stat">
-
-        <div class="stat-value">
-            {{ summary["runtime_seconds"] }}s
-        </div>
-
-        <div class="stat-label">
-            Audit runtime
-        </div>
-
-    </div>
-
-
-</div>
-
-
-
-<!-- =========================
-     JOURNEY
-========================= -->
-
-<h2 class="section-title">
-    AI Discoverability Journey
-</h2>
-
-
-<div class="card journey">
-
-
-<div class="journey-track">
-
-
-{% for stage, desc in [
-
-    ("DISCOVER", "Can AI find it?"),
-
-    ("ACCESS", "Can AI reach it?"),
-
-    ("UNDERSTAND", "Can AI understand it?"),
-
-    ("EXTRACT", "Can AI extract facts?"),
-
-    ("TRUST", "Can AI trust it?"),
-
-    ("REPRESENT", "Can AI represent it?")
-
-] %}
-
-
-<div class="stage">
-
-
-    <div class="stage-dot">
-
-        {{ loop.index }}
-
-    </div>
-
-
-    <div class="stage-name">
-
-        {{ stage }}
-
-    </div>
-
-
-    <div class="stage-desc">
-
-        {{ desc }}
-
-    </div>
-
-
-</div>
-
-
-{% endfor %}
-
-
-</div>
-
-
-</div>
-
-
-
-<!-- =========================
-     STRATEGIC REASONING & ROADMAP
-========================= -->
-{% if report.get("strategic_reasoning") %}
-{% set sr = report["strategic_reasoning"] %}
-
-<h2 class="section-title">
-    Agent Reasoning & Strategic Roadmap
-</h2>
-
-<div class="card reasoning-card">
-
-    <div class="reasoning-header">
-        <div style="flex: 1; min-width: 280px;">
-            <span class="reasoning-badge">Agent Synthesized</span>
-            <h3 style="margin: 9px 0 6px; font-size: 17px;">Architectural Synthesis</h3>
-            <p style="margin: 0; line-height: 1.6; font-size: 14px; color: var(--text);">
-                {{ sr["executive_summary"] }}
-            </p>
-        </div>
-
-        <div class="bottleneck-badge">
-            <div style="font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: 700;">Primary Bottleneck</div>
-            <div style="font-size: 16px; font-weight: 800; text-transform: uppercase; color: var(--accent); margin-top: 3px;">
-                {{ sr["primary_bottleneck_stage"] }}
-            </div>
-        </div>
-    </div>
-
-    {% if sr.get("strategic_themes") %}
-    <h4 style="margin: 22px 0 11px; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em;">Strategic Themes</h4>
-    <div class="strategic-themes-grid">
-        {% for theme in sr["strategic_themes"] %}
-        <div class="theme-card">
-            <b style="font-size: 13px; color: var(--text);">{{ theme["theme"] }}</b>
-            <p style="margin: 5px 0 9px; font-size: 12px; color: var(--muted); line-height: 1.45;">{{ theme["diagnosis"] }}</p>
-            <div style="font-size: 12px; border-left: 2px solid var(--accent); padding-left: 8px; line-height: 1.45;">
-                <b style="color: var(--accent);">Fix:</b> {{ theme["strategic_recommendation"] }}
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
-    {% if sr.get("remediation_roadmap") %}
-    <h4 style="margin: 24px 0 11px; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em;">Phased Remediation Roadmap</h4>
-    <div class="roadmap-grid">
-        {% for phase in sr["remediation_roadmap"] %}
-        <div class="phase-card">
-            <div class="phase-title">{{ phase["phase"] }}</div>
-            <div class="phase-obj">{{ phase["objective"] }}</div>
-            <ul class="phase-actions">
-                {% for action in phase["actions"] %}
-                <li>{{ action }}</li>
                 {% endfor %}
-            </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="glass-card rounded-xl p-4 border border-surface-border text-center">
+            <div class="text-2xl font-mono text-white mb-1">{{ summary["pages_crawled"] }}</div>
+            <div class="text-xs text-slate-400 uppercase tracking-wide">Pages Crawled</div>
+        </div>
+        <div class="glass-card rounded-xl p-4 border border-surface-border text-center">
+            <div class="text-2xl font-mono text-white mb-1">{{ summary["pages_rendered"] }}</div>
+            <div class="text-xs text-slate-400 uppercase tracking-wide">Pages Rendered</div>
+        </div>
+        <div class="glass-card rounded-xl p-4 border border-surface-border text-center">
+            <div class="text-2xl font-mono text-white mb-1">{{ summary["total_findings"] }}</div>
+            <div class="text-xs text-slate-400 uppercase tracking-wide">Total Findings</div>
+        </div>
+        <div class="glass-card rounded-xl p-4 border border-surface-border text-center flex gap-3 justify-center">
+            <div class="text-center">
+                <div class="text-xl font-mono text-red-400 mb-1">{{ summary["high"] }}</div>
+                <div class="text-[10px] text-slate-400 uppercase">High</div>
+            </div>
+            <div class="text-center">
+                <div class="text-xl font-mono text-amber-400 mb-1">{{ summary["medium"] }}</div>
+                <div class="text-[10px] text-slate-400 uppercase">Med</div>
+            </div>
+            <div class="text-center">
+                <div class="text-xl font-mono text-indigo-400 mb-1">{{ summary["low"] }}</div>
+                <div class="text-[10px] text-slate-400 uppercase">Low</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Findings -->
+    {% if report["findings"] %}
+    <h3 class="text-xl font-bold text-white mb-4 mt-8 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+        Actionable Findings
+    </h3>
+    <div class="space-y-4">
+        {% for finding in report["findings"] %}
+        <div class="glass-card rounded-xl p-5 border border-surface-border relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
+            <!-- Severity indicator line -->
+            <div class="absolute left-0 top-0 bottom-0 w-1 {% if finding["severity"] == 'critical' or finding["severity"] == 'high' %}bg-red-500{% elif finding["severity"] == 'medium' %}bg-amber-500{% else %}bg-indigo-500{% endif %}"></div>
+            
+            <div class="pl-2">
+                <div class="flex flex-wrap items-center gap-3 mb-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider
+                        {% if finding["severity"] == 'critical' or finding["severity"] == 'high' %}bg-red-500/10 text-red-400 border border-red-500/20
+                        {% elif finding["severity"] == 'medium' %}bg-amber-500/10 text-amber-400 border border-amber-500/20
+                        {% else %}bg-indigo-500/10 text-indigo-400 border border-indigo-500/20{% endif %}">
+                        {{ finding["severity"] }}
+                    </span>
+                    <span class="text-slate-300 font-semibold">{{ finding["title"] }}</span>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-900/60 rounded-lg p-3 border border-slate-800">
+                        <div class="text-xs text-slate-500 font-medium uppercase mb-1">Evidence</div>
+                        <div class="text-sm text-slate-300 font-mono">{{ finding["evidence"] }}</div>
+                    </div>
+                    <div class="bg-indigo-950/20 rounded-lg p-3 border border-indigo-500/20">
+                        <div class="text-xs text-indigo-400/70 font-medium uppercase mb-1">Recommendation</div>
+                        <div class="text-sm text-indigo-200">{{ finding["suggested_action"]["summary"] }}</div>
+                    </div>
+                </div>
+            </div>
         </div>
         {% endfor %}
     </div>
     {% endif %}
 
-</div>
-
-{% endif %}
-
-
-
-<!-- =========================
-     FINDINGS
-========================= -->
-
-<h2 class="section-title">
-    Findings
-</h2>
-
-
-
-<div class="finding-tools">
-
-
-    <input
-        class="finding-search"
-        id="findingSearch"
-        placeholder="Search findings..."
-        oninput="filterFindings()"
-    >
-
-
-    <button
-        class="filter-btn active"
-        onclick="setFilter('all', this)"
-        type="button"
-    >
-        All
-    </button>
-
-
-    <button
-        class="filter-btn"
-        onclick="setFilter('critical', this)"
-        type="button"
-    >
-        Critical
-    </button>
-
-
-    <button
-        class="filter-btn"
-        onclick="setFilter('high', this)"
-        type="button"
-    >
-        High
-    </button>
-
-
-    <button
-        class="filter-btn"
-        onclick="setFilter('medium', this)"
-        type="button"
-    >
-        Medium
-    </button>
-
-
-    <button
-        class="filter-btn"
-        onclick="setFilter('low', this)"
-        type="button"
-    >
-        Low
-    </button>
-
-
-</div>
-
-
-
-<div id="findingsContainer">
-
-
-{% for f in report["findings"] %}
-
-
-<details
-    class="finding card"
-    data-severity="{{ f["severity"] }}"
-    data-search="
-        {{ (
-            f["title"]
-            ~ " "
-            ~ f["evidence"]
-            ~ " "
-            ~ f["impact"]
-        )|lower }}
-    "
->
-
-
-<summary>
-
-
-    <div class="finding-title">
-
-
-        <span
-            class="severity {{ f["severity"] }}"
-        >
-            {{ f["severity"] }}
-        </span>
-
-
-        <div>
-
-
-            <div class="finding-name">
-
-                {{ f["title"] }}
-
-            </div>
-
-
-            <div class="finding-meta">
-
-                {{ f["id"] }}
-
-                · Stage:
-                {{ f["journey_stage"] or "-" }}
-
-                · Priority:
-                {{ f["suggested_action"]["priority"] }}
-
-                · Confidence:
-                {{ f["confidence"] }}
-
-                {% if f.get("enhanced_by_reasoning") %}
-                · <span class="reasoning-badge">Agent Reasoned</span>
-                {% endif %}
-
-            </div>
-
-
-        </div>
-
-
+    <!-- Downloads -->
+    <div class="mt-12 flex justify-center gap-4">
+        <a href="/download/json/{{ report_token }}" class="px-6 py-2.5 rounded-lg bg-surface-panel hover:bg-surface-elevated border border-surface-border text-slate-300 text-sm font-medium transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            Raw JSON
+        </a>
+        <a href="/download/html/{{ report_token }}" class="px-6 py-2.5 rounded-lg bg-surface-panel hover:bg-surface-elevated border border-surface-border text-slate-300 text-sm font-medium transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+            HTML View
+        </a>
     </div>
-
-
-</summary>
-
-
-
-<div class="finding-body">
-
-
-    <h4>
-        Evidence
-    </h4>
-
-
-    <p>
-        {{ f["evidence"] }}
-    </p>
-
-
-    {% if f.get("reasoning") and f["reasoning"].get("root_cause_analysis") %}
-
-    <h4>
-        Grounded Root Cause
-    </h4>
-
-    <p>
-        {{ f["reasoning"]["root_cause_analysis"] }}
-    </p>
-
-    {% endif %}
-
-
-    <h4>
-        Why it matters
-    </h4>
-
-
-    <p>
-        {{ f["impact"] }}
-    </p>
-
-
-    {% if f.get("reasoning") and f["reasoning"].get("ai_agent_impact") %}
-
-    <h4>
-        Autonomous AI Agent Impact
-    </h4>
-
-    <p>
-        {{ f["reasoning"]["ai_agent_impact"] }}
-    </p>
-
-    {% endif %}
-
-
-    {% if f.get("reasoning") and f["reasoning"].get("remediation_phase") %}
-
-    <div style="margin: 12px 0; display: flex; gap: 8px; flex-wrap: wrap;">
-        <span class="reasoning-tag">{{ f["reasoning"]["remediation_phase"] }}</span>
-        <span class="reasoning-tag">Effort: {{ f["reasoning"]["estimated_effort"]|upper }}</span>
-    </div>
-
-    {% endif %}
-
-
-    <h4>
-        Recommended fix
-    </h4>
-
-
-    <p>
-        {{ f["suggested_action"]["summary"] }}
-    </p>
-
-
-
-    {% if f["suggested_action"]["steps"] %}
-
-
-    <h4>
-        Implementation steps
-    </h4>
-
-
-    <ol>
-
-
-    {% for step in f["suggested_action"]["steps"] %}
-
-        <li>
-            {{ step }}
-        </li>
-
-    {% endfor %}
-
-
-    </ol>
-
-
-    {% endif %}
-
-
-
-    {% if f["affected_urls"] %}
-
-
-    <h4>
-        Affected URLs
-    </h4>
-
-
-    <div class="urls">
-
-
-        {% for affected_url in f["affected_urls"][:8] %}
-
-            {{ affected_url }}<br>
-
-        {% endfor %}
-
-
-    </div>
-
-
-    {% endif %}
-
-
-</div>
-
-
-</details>
-
-
-{% endfor %}
-
-
-</div>
-
-
-
-<!-- =========================
-     DOWNLOADS
-========================= -->
-
-<div class="actions">
-
-
-    <a
-        class="action-btn primary"
-        href="/download/json/{{ report_token }}"
-    >
-        Download JSON Report
-    </a>
-
-
-    <a
-        class="action-btn"
-        href="/download/html/{{ report_token }}"
-        target="_blank"
-    >
-        Open HTML Report
-    </a>
-
-
-</div>
-
-
 
 </section>
-
-
+<!-- END: Results Dashboard -->
 {% endif %}
 
-
-
-<div class="footer">
-
-    AI Website Readiness Auditor ·
-    Evidence-backed website analysis
-
-</div>
-
-
 </main>
-
-
+<!-- END: MainContent -->
+<!-- BEGIN: PageFooter -->
+<footer class="w-full border-t border-surface-border/60 py-6 text-xs text-slate-500">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<span class="font-medium text-slate-400">AI Website Readiness Auditor</span>
+<span>•</span>
+<span>Evidence-backed website analysis</span>
+</div>
+</div>
+</footer>
+<!-- END: PageFooter -->
 
 <script>
-
-
-/* =========================
-   THEME
-========================= */
-
-
-function updateThemeButton() {
-
-    const dark =
-        document.documentElement
-            .getAttribute("data-theme")
-        === "dark";
-
-
-    document.getElementById(
-        "themeButton"
-    ).textContent =
-        dark ? "☀︎" : "⏾";
-
-}
-
-
+// Light/Dark Theme logic
 function toggleTheme() {
-
-    const html =
-        document.documentElement;
-
-
-    const dark =
-        html.getAttribute("data-theme")
-        === "dark";
-
-
-    if (dark) {
-
-        html.removeAttribute(
-            "data-theme"
-        );
-
-        localStorage.setItem(
-            "aira-theme",
-            "light"
-        );
-
+    const html = document.documentElement;
+    if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
     } else {
-
-        html.setAttribute(
-            "data-theme",
-            "dark"
-        );
-
-        localStorage.setItem(
-            "aira-theme",
-            "dark"
-        );
-
+        html.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
     }
-
-
-    updateThemeButton();
-
+}
+// Load theme on start
+if (localStorage.theme === 'light') {
+    document.documentElement.classList.remove('dark');
+} else {
+    document.documentElement.classList.add('dark');
 }
 
+// Intercept form submission
+let timerInterval = null;
 
-function loadTheme() {
-
-    const saved =
-        localStorage.getItem(
-            "aira-theme"
-        );
-
-
-    if (saved === "dark") {
-
-        document.documentElement
-            .setAttribute(
-                "data-theme",
-                "dark"
-            );
-
+document.addEventListener('submit', async function(e) {
+    if (!e.target.matches('.audit-form')) return;
+    
+    e.preventDefault();
+    const form = e.target;
+    
+    if (form.dataset.submitting) return;
+    form.dataset.submitting = 'true';
+    
+    const btn = form.querySelector('.audit-btn');
+    const btnText = btn.querySelector('.btn-text');
+    const spinner = btn.querySelector('.spinner-icon');
+    
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    btn.style.cursor = 'not-allowed';
+    btnText.innerText = 'Auditing...';
+    spinner.classList.remove('hidden');
+    
+    // Hide existing elements
+    const dash = document.querySelector('.dashboard-section');
+    if (dash) dash.style.display = 'none';
+    const err = document.querySelector('.error-section');
+    if (err) err.style.display = 'none';
+    
+    // Show loading
+    const loading = document.getElementById('loadingPanel');
+    loading.style.display = 'block';
+    
+    try {
+        const urlVal = form.querySelector('.url-input').value;
+        const url = new URL(urlVal);
+        document.getElementById('loadingDomain').innerText = url.hostname;
+    } catch(err) {
+        document.getElementById('loadingDomain').innerText = form.querySelector('.url-input').value;
     }
-
-
-    updateThemeButton();
-
-}
-
-
-
-/* =========================
-   FINDING FILTERS
-========================= */
-
-
-let currentFilter = "all";
-
-
-function setFilter(
-    filter,
-    button
-) {
-
-    currentFilter = filter;
-
-
-    document
-        .querySelectorAll(
-            ".filter-btn"
-        )
-        .forEach(
-            btn =>
-                btn.classList.remove(
-                    "active"
-                )
-        );
-
-
-    button.classList.add(
-        "active"
-    );
-
-
-    filterFindings();
-
-}
-
-
-
-function filterFindings() {
-
-    const input =
-        document.getElementById(
-            "findingSearch"
-        );
-
-
-    const search =
-        input
-            ? input.value.toLowerCase()
-            : "";
-
-
-    document
-        .querySelectorAll(
-            ".finding"
-        )
-        .forEach(
-            card => {
-
-
-                const severity =
-                    card.dataset.severity;
-
-
-                const text =
-                    card.dataset.search;
-
-
-                const matchesSeverity =
-                    currentFilter === "all"
-                    ||
-                    severity === currentFilter;
-
-
-                const matchesSearch =
-                    !search
-                    ||
-                    text.includes(
-                        search
-                    );
-
-
-                card.style.display =
-                    matchesSeverity
-                    &&
-                    matchesSearch
-                        ? ""
-                        : "none";
-
-            }
-        );
-
-}
-
-
-
-/* =========================
-   INITIALIZE
-========================= */
-
-
-loadTheme();
-
-
+    
+    const timerEl = document.getElementById('loadingTimer');
+    timerEl.innerText = '00:00';
+    let start = Date.now();
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        let elapsed = Math.floor((Date.now() - start) / 1000);
+        let m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        let s = String(elapsed % 60).padStart(2, '0');
+        timerEl.innerText = `${m}:${s}`;
+    }, 1000);
+    
+    try {
+        const formData = new FormData(form);
+        const response = await fetch('/', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'fetch' }
+        });
+        
+        const html = await response.text();
+        
+        if (!response.ok) {
+            throw new Error('Server returned ' + response.status + ': ' + html.substring(0, 200));
+        }
+        
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        const newContainer = doc.querySelector('.main-container');
+        if (!newContainer) {
+            throw new Error('Server returned an unexpected response.');
+        }
+        
+        // Update the main container
+        document.querySelector('.main-container').innerHTML = newContainer.innerHTML;
+        
+        // Timer stops because the container is replaced, but we should clear the interval
+        clearInterval(timerInterval);
+        
+    } catch (error) {
+        console.error('Audit fetch error:', error);
+        clearInterval(timerInterval);
+        form.dataset.submitting = '';
+        btn.disabled = false;
+        btn.style.opacity = '';
+        btn.style.cursor = 'pointer';
+        btnText.innerText = 'Audit Website';
+        spinner.classList.add('hidden');
+        loading.style.display = 'none';
+        
+        // Show an error with the actual message
+        const msg = error.message || 'Network error: Failed to reach the audit server.';
+        let errEl = document.querySelector('.error-section');
+        if (!errEl) {
+            errEl = document.createElement('section');
+            errEl.className = 'w-full error-section';
+            errEl.innerHTML = `
+            <div class="glass-card rounded-2xl p-5 border border-red-500/30 bg-red-900/10">
+                <div class="flex items-start gap-3 text-red-400">
+                    <p class="text-sm"></p>
+                </div>
+            </div>`;
+            form.closest('section').insertAdjacentElement('afterend', errEl);
+        }
+        errEl.querySelector('p').innerText = msg;
+        errEl.style.display = 'block';
+    }
+});
 </script>
+</body></html>
 
-
-</body>
-
-</html>
 """
 
 
@@ -2102,8 +580,13 @@ def index():
 
             try:
 
-                config = AuditConfig()
-
+                config = AuditConfig(
+                    max_pages=10,
+                    max_depth=2,
+                    max_rendered_pages=3,
+                    total_crawl_budget_s=60.0,
+                    render_budget_s=30.0,
+                )
 
                 report = run_audit(
                     url,

@@ -170,6 +170,7 @@ class SiteCrawler:
 
     # -- sitemap --------------------------------------------------------
     async def _load_sitemaps(self, client: httpx.AsyncClient) -> None:
+        started = time.perf_counter()
         candidates: list[str] = []
         if self.result.robots_txt:
             for line in self.result.robots_txt.splitlines():
@@ -181,6 +182,8 @@ class SiteCrawler:
         seen: set[str] = set()
         urls: list[str] = []
         for cand in candidates[:5]:
+            if time.perf_counter() - started > (self.cfg.total_crawl_budget_s * 0.25):
+                break
             norm = normalize_url(cand, self.target.url)
             if not norm or norm in seen:
                 continue
@@ -196,6 +199,8 @@ class SiteCrawler:
             urls.extend(self._parse_sitemap(resp.text, norm))
             # one level of sitemap-index expansion, bounded
             for child in self._sitemap_children(resp.text, norm)[:5]:
+                if time.perf_counter() - started > (self.cfg.total_crawl_budget_s * 0.25):
+                    break
                 if child in seen:
                     continue
                 seen.add(child)
