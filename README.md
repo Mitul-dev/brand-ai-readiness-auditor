@@ -1,10 +1,46 @@
-# brand-ai-readiness-audit
+<div align="center">
 
-An Agent Skill Marketplace that takes a website URL and returns an
-evidence-backed audit of **AI discoverability** and **on-site engagement**, with
-severity, suggested fixes and priority for every finding.
+#  brand-ai-readiness-audit
 
-Built for the **Adobe University Hackathon 2026 — Agent Skill Marketplace.**
+**An Agent Skill Marketplace that audits any website for AI discoverability and on-site engagement — evidence-backed, deterministic, and read-only.**
+
+*Built for the Adobe University Hackathon 2026 — Round 3: Agent Skill Marketplace*
+
+![Tests](https://img.shields.io/badge/tests-198%2F198%20passing-brightgreen?style=flat-square)
+![Python](https://img.shields.io/badge/python-3.11%2B-blue?style=flat-square)
+![Spec](https://img.shields.io/badge/spec-agentskills.io-blueviolet?style=flat-square)
+![Zip](https://img.shields.io/badge/zip-%3C1MB%20of%2050MB%20limit-lightgrey?style=flat-square)
+![License](https://img.shields.io/badge/license-MIT-informational?style=flat-square)
+
+</div>
+
+---
+
+Pointed at a website URL, this marketplace returns a single structured JSON
+report — evidence-backed findings, severity, confidence and prioritized fixes —
+across two failure surfaces: why a brand is missing, ignored or misquoted by AI
+assistants (**discoverability**), and why human visitors who do arrive don't
+stay (**engagement**).
+
+## Contents
+
+- [What problem this solves](#what-problem-this-solves)
+- [Requirements checklist](#requirements-checklist)
+- [Design principle: The 5-Stage Architecture](#design-principle-the-5-stage-architecture)
+- [Architecture](#architecture)
+- [Skills](#skills)
+- [Check inventory](#check-inventory)
+- [Repository layout](#repository-layout)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Web dashboard](#web-dashboard)
+- [How findings are scored](#how-findings-are-scored)
+- [False-positive control](#false-positive-control)
+- [Testing](#testing)
+- [Safety model](#safety-model)
+- [Performance](#performance)
+- [Requirements and implementation choices](#requirements-and-implementation-choices)
+- [Known limitations](#known-limitations)
 
 ---
 
@@ -37,7 +73,29 @@ Impact:   Clients that do not execute JavaScript see a fraction of the page, so
 
 ---
 
-## Design principle: The 5-Stage Architecture
+## Requirements checklist
+
+A fast, scannable check against the handout's requirements. Full detail and
+rationale for each row is in [Requirements and implementation
+choices](#requirements-and-implementation-choices) further down.
+
+| Handout requirement | Status | Where |
+|---|---|---|
+| Single marketplace package, `marketplace.json`, exactly one entrypoint | ✅ | `marketplace.json` |
+| Valid `SKILL.md` (agentskills.io spec) per skill folder | ✅ | `skills/*/SKILL.md` |
+| Report schema — `site`, `audited_at`, `summary`, and per-finding `id`/`title`/`severity`/`evidence`/`suggested_action` | ✅ | `aira/report.py`, example above |
+| Recommend-only — no skill edits or alters a live site | ✅ | [Safety model](#safety-model) |
+| Read-only sandbox, GET/HEAD only | ✅ | `aira/urls.py`, `aira/crawler.py` |
+| Respects `robots.txt` | ✅ | `aira/crawler.py` |
+| No destructive, authenticated or rate-abusive behaviour | ✅ | [Safety model](#safety-model) |
+| Portable skills, no external service needed to resolve the manifest | ✅ | `skills/` is self-contained |
+| Submission ZIP ≤ 50 MB | ✅ | package is a few hundred KB |
+| Typical audit runtime < 5 minutes | ✅ | [Performance](#performance) |
+| No pretrained model weights | ✅ | dependency list in [Performance](#performance) |
+
+---
+
+##  Design principle: The 5-Stage Architecture
 
 ```
 DETERMINISTIC DATA COLLECTION → OBJECTIVE EVIDENCE → AGENT REASONING
@@ -56,7 +114,7 @@ The anti-pattern this deliberately avoids is `page → LLM → "what's wrong?"`,
 
 ---
 
-## Architecture
+##  Architecture
 
 ```
                   ┌─────────────────────────┐
@@ -113,17 +171,19 @@ evidence file, so any of them can be run, tested or replaced independently.
 
 ### Check inventory
 
-| Stage | Checks |
-|---|---|
-| DISCOVER | site unreachable · site-wide robots disallow · **named AI/answer-engine crawlers disallowed** · important page disallowed · HTTP 404/410/5xx · missing sitemap · **sitemap entries that fail** · **important pages absent from the sitemap** · redirect chains |
-| ACCESS | `noindex` meta tag · **`noindex` X-Robots-Tag header** · JavaScript-dependent content · important pages 3+ hops deep · important pages with no inbound internal links |
-| UNDERSTAND | thin important pages · missing H1 · no authored summary anywhere · off-site or unresolvable canonical |
-| EXTRACT | JSON-LD that does not parse · **JSON-LD that parses but is missing expected properties or holds placeholders** · missing Organization/WebSite identity · product pages without Product schema · information carried only in images |
-| TRUST | entity naming conflict · contact facts contradicting structured data · **structured-data name contradicting the visible H1** · freshness risk · Organization declared without `sameAs` |
-| ENGAGEMENT | homepage does not state the offering · page does not identify itself · no navigation region · no next step · interior pages that strand the visitor |
+| ID | Stage | Checks |
+|---|---|---|
+| D-01..D-09 | DISCOVER | site unreachable · site-wide robots disallow · **named AI/answer-engine crawlers disallowed** · important page disallowed · HTTP 404/410/5xx · missing sitemap · **sitemap entries that fail** · **important pages absent from the sitemap** · redirect chains |
+| A-01..A-05 | ACCESS | `noindex` meta tag · **`noindex` X-Robots-Tag header** · JavaScript-dependent content · important pages 3+ hops deep · important pages with no inbound internal links |
+| U-01..U-04 | UNDERSTAND | thin important pages · missing H1 · no authored summary anywhere · off-site or unresolvable canonical |
+| X-01..X-05 | EXTRACT | JSON-LD that does not parse · **JSON-LD that parses but is missing expected properties or holds placeholders** · missing Organization/WebSite identity · product pages without Product schema · information carried only in images |
+| T-01..T-05 | TRUST | entity naming conflict · contact facts contradicting structured data · **structured-data name contradicting the visible H1** · freshness risk · Organization declared without `sameAs` |
+| G-01..G-05 | ENGAGEMENT | homepage does not state the offering · page does not identify itself · no navigation region · no next step · interior pages that strand the visitor |
 
 Checks in **bold** are the ones a generic SEO scanner does not perform; they are
-the AI-specific mechanisms this audit exists to find.
+the AI-specific mechanisms this audit exists to find. IDs are ranges in
+table order (e.g. `D-01` = site unreachable, `D-02` = site-wide robots
+disallow, …) — cross-reference a specific check by its position in the list.
 
 ### Repository layout
 
@@ -155,7 +215,7 @@ brand-ai-readiness-audit/
 
 ---
 
-## Installation
+##  Installation
 
 ```bash
 python -m venv .venv && source .venv/bin/activate     # Python 3.11+
@@ -170,7 +230,7 @@ guessing.
 
 ---
 
-## Usage
+##  Usage
 
 Full audit through the entrypoint skill:
 
@@ -261,7 +321,7 @@ The four fields the handout requires on every finding — `id`, `title`,
 `severity`, `evidence`, `suggested_action` — are always present; everything else
 is additive.
 
-## Web dashboard
+##  Web dashboard
 
 A lightweight Flask dashboard runs audits from a browser and renders the same
 report the CLI produces.
@@ -300,7 +360,7 @@ Notes that matter when deploying:
 
 ---
 
-## How findings are scored
+##  How findings are scored
 
 **Severity** comes from a base level per check (its failure *mechanism*),
 adjusted by reach and by whether important pages are affected. `critical` is
@@ -331,7 +391,7 @@ could not be judged is reported as `null`, not as 0 or 100.
 
 ---
 
-## False-positive control
+##  False-positive control
 
 Precision matters more than finding count. The system deliberately does **not**
 report:
@@ -367,6 +427,9 @@ the one place where reasoning, not code, makes the call.
 
 `tests/test_false_positives.py` enforces this: the healthy fixture must produce
 **zero** findings, with and without rendering.
+
+<details>
+<summary><strong>Edge-case handling in detail</strong> — redirects, navigation detection, non-page resources, rendering honesty (click to expand)</summary>
 
 ### A refusal to follow a redirect is not a site outage
 
@@ -442,9 +505,11 @@ JavaScript-injected content, and checks that reason from the absence of text
 (such as thin content) say so in their evidence, carry a benign explanation and
 have their confidence reduced accordingly.
 
+</details>
+
 ---
 
-## Testing
+##  Testing
 
 ```bash
 pytest -q                       # 198 tests
@@ -455,6 +520,9 @@ The test suite includes `tests/test_reasoning.py` verifying evidence grounding, 
 
 Sixteen controlled fixture sites are served from a local HTTP server, each with a
 known defect and a known expected finding:
+
+<details>
+<summary><strong>All 18 fixture sites and their expected findings</strong> (click to expand)</summary>
 
 | Fixture | Expected |
 |---|---|
@@ -477,13 +545,15 @@ known defect and a known expected finding:
 | `nav_without_landmark` | `missing_nav_landmark` at low severity only; never `weak_navigation` |
 | `component_endpoints` | fragment and API endpoints classified as non-pages and excluded from page checks |
 
+</details>
+
 Tests assert the evidence — the check that fired, the journey stage, the metric
 values, the severity band, the presence of mechanism-sound fix steps — not just
 that some finding exists.
 
 ---
 
-## Safety model
+##  Safety model
 
 - **Read-only.** GET requests only. No form submission, no authentication, no
   state-changing request, no write of any kind to the audited site.
@@ -517,7 +587,7 @@ that some finding exists.
 
 ---
 
-## Performance
+##  Performance
 
 - Typical audit (20 pages, 8 rendered): well under the 5-minute budget; the
   bundled fixture suite of 11 sites runs end to end in under a minute.
@@ -530,7 +600,7 @@ that some finding exists.
 
 ---
 
-## Requirements and implementation choices
+##  Requirements and implementation choices
 
 ### The check that matters most
 
@@ -571,7 +641,7 @@ above are implementation choices designed to provide mechanism-sound evidence.
 
 ---
 
-## Known limitations
+##  Known limitations
 
 - **Depth is crawl-relative.** "Four hops from the homepage" means four hops
   *within the crawled subset*; a tighter budget can overstate depth. The finding
@@ -612,6 +682,6 @@ above are implementation choices designed to provide mechanism-sound evidence.
 
 ---
 
-## License
+##  License
 
 MIT.
