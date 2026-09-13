@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 # URL-slug vocabulary per role. A small set of common non-English slugs is
 # included for the roles that matter most: without it, every page on a
@@ -102,6 +102,16 @@ def _slug_tokens(url: str) -> set[str]:
 def classify_role(url: str, title: str, headings: list[str], is_home: bool) -> str:
     if is_home:
         return "home"
+
+    query = parse_qs(urlsplit(url).query)
+    listing_types = [
+        v.lower()
+        for key in ("type", "ptype")
+        for v in query.get(key, [])
+    ]
+    if any(v.startswith("listing") for v in listing_types):
+        return "other"
+
     tokens = _slug_tokens(url)
     for role, pats in ROLE_PATTERNS.items():
         if tokens & set(pats):

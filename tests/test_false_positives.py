@@ -1,3 +1,4 @@
+
 """False-positive control.
 
 A healthy site must produce no findings, and benign variation (legal vs trading
@@ -6,7 +7,7 @@ problem. These tests are as important as the detection tests: the rubric rewards
 precision, not finding count.
 """
 from __future__ import annotations
-
+from aira.importance import classify_role
 from conftest import check_ids, find_check
 
 
@@ -139,4 +140,12 @@ def test_fp_prone_checks_carry_benign_explanations(audit):
                 seen.add(f.check_id)
                 assert f.benign_explanations, \
                     f"{f.check_id} can misfire but offers no benign explanation"
-    assert len(seen) >= 6, f"expected to exercise more FP-prone checks, saw {seen}"
+    assert len(seen) >= 6
+def test_nike_listing_page_is_not_classified_as_product_page():
+    role = classify_role(
+        "https://www.nike.in/air-force-1/c/94020?ptype=listing",
+        "Nike - Official Online Store for Athletic Shoes, Clothing & Gear",
+        ["Air Force 1 (97)"],
+        False,
+    )
+    assert role != "products"
